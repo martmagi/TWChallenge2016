@@ -62,7 +62,7 @@ public class ReceiptAdapter extends ArrayAdapter<Receipt> {
             tv.setText(content.getName());
             tv2.setText(content.getPrice() + " €");
             if( b > i){
-contentView.setBackgroundColor(context.getColor(R.color.inactive));
+contentView.setBackgroundColor(context.getResources().getColor(R.color.inactive));
             }
             TextView good = (TextView) v.findViewById(R.id.good);
             TextView bad = (TextView) v.findViewById(R.id.bad);
