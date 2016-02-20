@@ -33,18 +33,18 @@ public class Receipt {
         this.date = date;
         this.contentList  = new ArrayList<ReceiptContent>();
         for (int i = 0; i < 6; ++i) {
-            ReceiptContent receiptContent = new ReceiptContent("Yummy icecream", "6 €");
+            ReceiptContent receiptContent = new ReceiptContent("Yummy icecream", "6");
             this.contentList.add(receiptContent);
         }
         if("2".equals(companyName) | "3".equals(companyName)){
             for (int i = 0; i < 3; ++i) {
-                ReceiptContent receiptContent = new ReceiptContent("Moooaaar icecream", "6 €");
+                ReceiptContent receiptContent = new ReceiptContent("Moooaaar icecream", "6");
                 this.contentList.add(receiptContent);
             }
         }
         if("3".equals(companyName)){
             for (int i = 0; i < 12; ++i) {
-                ReceiptContent receiptContent = new ReceiptContent("Icecreaaam", "6 €");
+                ReceiptContent receiptContent = new ReceiptContent("Icecreaaam", "6");
                 this.contentList.add(receiptContent);
             }
         }
