@@ -56,7 +56,7 @@ public class MainActivity extends Activity {
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    private static final String PREF_ACCOUNT_NAME = "ristoparnapuu@gmail.com";
+    private static final String PREF_ACCOUNT_NAME = "";
     private static final String[] SCOPES = { GmailScopes.GMAIL_LABELS, GmailScopes.GMAIL_READONLY, GmailScopes.MAIL_GOOGLE_COM };
 
     /**
@@ -98,6 +98,7 @@ public class MainActivity extends Activity {
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff())
                 .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
+
     }
 
 
@@ -277,40 +278,38 @@ public class MainActivity extends Activity {
             List<String> labels = new ArrayList<String>();
 
             ListMessagesResponse messages = mService.users().messages().list(user).execute();
-            List<List<String>> found = new ArrayList<>();
+            List<Receipt> found = new ArrayList<>();
             List<String> metaHeaders = new ArrayList<>();
             metaHeaders.add("Return-Path");
             metaHeaders.add("Date");
-
+            int counter = 0;
             for (Message message : messages.getMessages()){
                 List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).execute().getPayload().getHeaders();
                 String date = "";
-                String sender = "";
+                String content = "";
 
                 boolean foundEntry = false;
-                List<String> newEntry = new ArrayList();
                 for(MessagePartHeader header : headers){
-                    if (header.getName().equals("Return-Path") && header.getValue().equals("<automailer@seb.ee>")){
-                        sender = header.getValue();
-                        String messageSnippet = mService.users().messages().get(user, message.getId()).execute().getSnippet();
-                        newEntry.add(sender);
-                        newEntry.add(messageSnippet);
+                    if (header.getName().equals("Return-Path") && header.getValue().equals("<mart.magi@outlook.com>")){
                         foundEntry = true;
-                        String content = new String(Base64.decodeBase64(mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData()), "UTF-8");
-                        System.out.println(content);
+                        content = new String(Base64.decodeBase64(mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData()), "UTF-8");
                     }
                     if (foundEntry && header.getName().equals("Date")){
                         date = header.getValue();
-                        newEntry.add(date);
-                        found.add(newEntry);
+                        found.add(Receipt.stringToReceipt(content, date));
                         break;
                     }
                 }
+                counter++;
+                if (counter > 5){
+                    break;
+                }
             }
-            for (List<String> data : found){
-                System.out.println(
-                        data
-                );
+            for (Receipt receipt : found){
+                DBHelper dbHelper = new DBHelper(MainActivity.this);
+                dbHelper.insertIntoDB(receipt);
+                System.out.println(dbHelper.readFromDB().get(0));
+                callNotification(null, receipt);
             }
 
             return labels;
@@ -330,7 +329,7 @@ public class MainActivity extends Activity {
                 mOutputText.setText("No results returned.");
             } else {
                 output.add(0, "Data retrieved using the Gmail API:");
-                mOutputText.setText(TextUtils.join("\n", output));
+                //mOutputText.setText(TextUtils.join("\n", output));
             }
         }
 
@@ -355,7 +354,7 @@ public class MainActivity extends Activity {
             }
         }
     }
-    public void callNotification(View v) {
+    public void callNotification(View v, Receipt receipt) {
         //notification shit
         int notificationId = new Random().nextInt(); // just use a counter in some util class...
         PendingIntent dismissIntent = NotificationActivity.getDismissIntent(notificationId, this);
@@ -364,7 +363,7 @@ public class MainActivity extends Activity {
         builder.setPriority(NotificationCompat.PRIORITY_MAX) //HIGH, MAX, FULL_SCREEN and setDefaults(Notification.DEFAULT_ALL) will make it a Heads Up Display Style
                 .setDefaults(Notification.DEFAULT_ALL) // also requires VIBRATE permission
                 .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark) // Required!
-                .setContentTitle("You have spent some money!")
+                .setContentTitle("You spent " + receipt.getPrice() + " at " + receipt.getCompanyName())
                 .setContentText("Was it really necessary?")
                 .setAutoCancel(true)
                 .addAction(R.drawable.common_google_signin_btn_icon_dark_normal, "Not really..", dismissIntent)

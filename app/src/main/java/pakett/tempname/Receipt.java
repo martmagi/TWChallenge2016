@@ -1,5 +1,6 @@
 package pakett.tempname;
 
+import java.util.Arrays;
 import java.util.Date;
 
 /**
@@ -14,10 +15,10 @@ public class Receipt {
     public Receipt() {
     }
 
-    public Receipt(String companyName, int price) {
+    public Receipt(String companyName, int price, String date) {
         this.companyName = companyName;
         this.price = price;
-        this.date = new Date().toString();
+        this.date = date;
     }
 
     public boolean isUseful() {
@@ -52,12 +53,11 @@ public class Receipt {
         this.date = date;
     }
 
-    public static Receipt stringToReceipt(String string) {
-        String[] lines = string.split("\\n");
-
+    public static Receipt stringToReceipt(String string, String date) {
+        String[] lines = string.split("\\r\\n");
         String paidSumLine = lines[4];
         String[] paidSumLines = paidSumLine.split(" ");
-        int paidSum = Integer.parseInt(paidSumLines[0]);
+        int paidSum = Integer.parseInt(paidSumLines[0].replace(" ",""));
 
         String paidToLine = lines[5];
         String paidToSplitAtExpression = paidToLine.split(">")[0];
@@ -70,7 +70,17 @@ public class Receipt {
             companyName += paidToFullExpression[i];
         }
 
-        Receipt receipt = new Receipt(companyName, paidSum);
+        Receipt receipt = new Receipt(companyName, paidSum, date);
         return receipt;
+    }
+
+    @Override
+    public String toString() {
+        return "Receipt{" +
+                "useful=" + useful +
+                ", companyName='" + companyName + '\'' +
+                ", price=" + price +
+                ", date='" + date + '\'' +
+                '}';
     }
 }
