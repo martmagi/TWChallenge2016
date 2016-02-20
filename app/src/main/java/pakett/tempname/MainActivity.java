@@ -272,7 +272,7 @@ public class MainActivity extends Activity {
                     mService.users().messages().list(user).execute();
 
             ListMessagesResponse test = mService.users().messages().list(user).execute();
-            
+
             if (messages == null){
                 Toast.makeText(MainActivity.this,"Is null", Toast.LENGTH_LONG).show();
             }
