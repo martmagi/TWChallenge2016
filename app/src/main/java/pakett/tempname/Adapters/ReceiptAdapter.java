@@ -11,7 +11,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 
-import pakett.tempname.Models.Receipt;
+import pakett.tempname.Receipt;
 import pakett.tempname.Models.ReceiptContent;
 import pakett.tempname.R;
 
@@ -44,8 +44,14 @@ public class ReceiptAdapter extends ArrayAdapter<Receipt> {
         LinearLayout contentHolder = (LinearLayout) v.findViewById(R.id.content_holder);
         contentHolder.removeAllViews();
 
+        TextView date = (TextView) v.findViewById(R.id.receipt_date);
+        TextView total = (TextView) v.findViewById(R.id.receipt_total);
 
+        date.setText(receipt.getDate());
+        total.setText(receipt.getPrice() + " €");
         System.out.println(receipt.getContentList().size());
+        int i = receipt.getContentList().size()/3;
+        int b = 1;
         for (ReceiptContent content:receipt.getContentList()
              ) {
             LinearLayout contentView = (LinearLayout) inflater.inflate(R.layout.receipt_content_item, null);

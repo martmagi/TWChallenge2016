@@ -1,24 +1,11 @@
-package pakett.tempname.Activities;
-
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.ExponentialBackOff;
-
-import com.google.api.services.gmail.GmailScopes;
-
-import com.google.api.services.gmail.model.*;
+package pakett.tempname;
 
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -27,35 +14,52 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v7.app.ActionBar;
+import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
-import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.Base64;
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.gmail.GmailScopes;
+import com.google.api.services.gmail.model.ListMessagesResponse;
+import com.google.api.services.gmail.model.Message;
+import com.google.api.services.gmail.model.MessagePartHeader;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
-import pakett.tempname.R;
-import pakett.tempname.Models.Receipt;
 import pakett.tempname.Adapters.ReceiptAdapter;
+//import pakett.tempname.Models.Receipt;
+
 
 public class MainActivity extends AppCompatActivity {
     GoogleAccountCredential mCredential;
     private TextView mOutputText;
     ProgressDialog mProgress;
+    DBHelper mydb;
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
-    private static final String PREF_ACCOUNT_NAME = "ristoparnapuu@gmail.com";
+    private static final String PREF_ACCOUNT_NAME = "";
     private static final String[] SCOPES = { GmailScopes.GMAIL_LABELS, GmailScopes.GMAIL_READONLY, GmailScopes.MAIL_GOOGLE_COM };
 
     /**
@@ -70,10 +74,14 @@ public class MainActivity extends AppCompatActivity {
         ListView recieptView = (ListView) findViewById(R.id.receipt_list);
 
         final ArrayList<Receipt> list = new ArrayList<Receipt>();
-        for (int i = 0; i < 6; ++i) {
-            Receipt receipt = new Receipt("Heyoo", 123, "54321");
-            list.add(receipt);
-        }
+
+            Receipt receipt1 = new Receipt("1", 36, "20.02.2016");
+            Receipt receipt2 = new Receipt("2", 54, "12.02.2016 - 19.02.2016");
+            Receipt receipt3 = new Receipt("3", 126, "12.01.2016 - 12.02.2016");
+
+            list.add(receipt1);
+            list.add(receipt2);
+            list.add(receipt3);
         ReceiptAdapter itemsAdapter =
                 new ReceiptAdapter(this, 0, list);
         recieptView.setAdapter(itemsAdapter);
@@ -89,6 +97,8 @@ public class MainActivity extends AppCompatActivity {
         activityLayout.setLayoutParams(lp);
         activityLayout.setOrientation(LinearLayout.VERTICAL);
         activityLayout.setPadding(16, 16, 16, 16);
+
+        mydb = new DBHelper(this);
 
         ViewGroup.LayoutParams tlp = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -112,6 +122,7 @@ public class MainActivity extends AppCompatActivity {
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff())
                 .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
+
     }
 
     /**
@@ -288,24 +299,42 @@ public class MainActivity extends AppCompatActivity {
             // Get the labels in the user's account.
             String user = "me";
             List<String> labels = new ArrayList<String>();
-            ListLabelsResponse listResponse =
-                    mService.users().labels().list(user).execute();
 
-            ListMessagesResponse messages =
-                    mService.users().messages().list(user).execute();
+            ListMessagesResponse messages = mService.users().messages().list(user).execute();
+            List<Receipt> found = new ArrayList<>();
+            List<String> metaHeaders = new ArrayList<>();
+            metaHeaders.add("Return-Path");
+            metaHeaders.add("Date");
+            int counter = 0;
+            for (Message message : messages.getMessages()){
+                List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).execute().getPayload().getHeaders();
+                String date = "";
+                String content = "";
 
-            ListMessagesResponse test = mService.users().messages().list(user).execute();
-
-            if (messages == null){
-                Toast.makeText(MainActivity.this,"Is null", Toast.LENGTH_LONG).show();
+                boolean foundEntry = false;
+                for(MessagePartHeader header : headers){
+                    if (header.getName().equals("Return-Path") && header.getValue().equals("<mart.magi@outlook.com>")){
+                        foundEntry = true;
+                        content = new String(Base64.decodeBase64(mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData()), "UTF-8");
+                    }
+                    if (foundEntry && header.getName().equals("Date")){
+                        date = header.getValue();
+                        found.add(Receipt.stringToReceipt(content, date));
+                        break;
+                    }
+                }
+                counter++;
+                if (counter > 5){
+                    break;
+                }
             }
-            for (Label label : listResponse.getLabels()) {
-                labels.add(label.getName());
+            for (Receipt receipt : found){
+                DBHelper dbHelper = new DBHelper(MainActivity.this);
+                dbHelper.insertIntoDB(receipt);
+                System.out.println(dbHelper.readFromDB().get(0));
+                callNotification(null, receipt);
             }
 
-            //for (Message message : messages.getMessages()){
-            //    labels.add(message.getRaw());
-            //}
             return labels;
         }
 
@@ -323,7 +352,7 @@ public class MainActivity extends AppCompatActivity {
                 mOutputText.setText("No results returned.");
             } else {
                 output.add(0, "Data retrieved using the Gmail API:");
-                mOutputText.setText(TextUtils.join("\n", output));
+                //mOutputText.setText(TextUtils.join("\n", output));
             }
         }
 
@@ -347,5 +376,26 @@ public class MainActivity extends AppCompatActivity {
                 mOutputText.setText("Request cancelled.");
             }
         }
+    }
+    public void callNotification(View v, Receipt receipt) {
+        //notification shit
+        int notificationId = new Random().nextInt(); // just use a counter in some util class...
+        PendingIntent dismissIntent = NotificationActivity.getDismissIntent(notificationId, this);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setPriority(NotificationCompat.PRIORITY_MAX) //HIGH, MAX, FULL_SCREEN and setDefaults(Notification.DEFAULT_ALL) will make it a Heads Up Display Style
+                .setDefaults(Notification.DEFAULT_ALL) // also requires VIBRATE permission
+                .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark) // Required!
+                .setContentTitle("You spent " + receipt.getPrice() + " at " + receipt.getCompanyName())
+                .setContentText("Was it really necessary?")
+                .setAutoCancel(true)
+                .addAction(R.drawable.common_google_signin_btn_icon_dark_normal, "Not really..", dismissIntent)
+                .addAction(R.drawable.common_google_signin_btn_icon_dark_normal, "Of course!", dismissIntent);
+
+        // Gets an instance of the NotificationManager service
+        NotificationManager notifyMgr = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Builds the notification and issues it.
+        notifyMgr.notify(notificationId, builder.build());
     }
 }
