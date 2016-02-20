@@ -1,4 +1,4 @@
-package pakett.tempname;
+package pakett.tempname.Activities;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -12,7 +12,6 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.ExponentialBackOff;
 
-import com.google.api.services.gmail.Gmail;
 import com.google.api.services.gmail.GmailScopes;
 
 import com.google.api.services.gmail.model.*;
@@ -28,10 +27,14 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.ActionBar;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,7 +43,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class MainActivity extends Activity {
+import pakett.tempname.R;
+import pakett.tempname.Models.Receipt;
+import pakett.tempname.Adapters.ReceiptAdapter;
+
+public class MainActivity extends AppCompatActivity {
     GoogleAccountCredential mCredential;
     private TextView mOutputText;
     ProgressDialog mProgress;
@@ -58,6 +65,23 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_main);
+
+        ListView recieptView = (ListView) findViewById(R.id.receipt_list);
+
+        final ArrayList<Receipt> list = new ArrayList<Receipt>();
+        for (int i = 0; i < 6; ++i) {
+            Receipt receipt = new Receipt("Heyoo", 123, "54321");
+            list.add(receipt);
+        }
+        ReceiptAdapter itemsAdapter =
+                new ReceiptAdapter(this, 0, list);
+        recieptView.setAdapter(itemsAdapter);
+        //sforGoogle();??
+
+    }
+
+    private void forGoogle(){
         LinearLayout activityLayout = new LinearLayout(this);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -90,7 +114,6 @@ public class MainActivity extends Activity {
                 .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
     }
 
-
     /**
      * Called whenever this activity is pushed to the foreground, such as after
      * a call to onCreate().
@@ -98,12 +121,12 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (isGooglePlayServicesAvailable()) {
+        /*if (isGooglePlayServicesAvailable()) {
             refreshResults();
         } else {
             mOutputText.setText("Google Play Services required: " +
                     "after installing, close and relaunch this app.");
-        }
+        }*/
     }
 
     /**
