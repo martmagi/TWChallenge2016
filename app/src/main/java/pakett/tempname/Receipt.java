@@ -1,16 +1,23 @@
 package pakett.tempname;
 
+import java.util.Date;
+
 /**
  * Created by Mart on 20/02/2016.
  */
 public class Receipt {
     private boolean useful;
     private String companyName;
-    private double price;
+    private int price;
+    private String date;
 
-    public Receipt(String companyName, double price) {
+    public Receipt() {
+    }
+
+    public Receipt(String companyName, int price) {
         this.companyName = companyName;
         this.price = price;
+        this.date = new Date().toString();
     }
 
     public boolean isUseful() {
@@ -33,16 +40,24 @@ public class Receipt {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(int price) {
         this.price = price;
     }
 
-    public Receipt stringToReceipt(String string) {
+    public String getDate() {
+        return this.date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public static Receipt stringToReceipt(String string) {
         String[] lines = string.split("\\n");
 
         String paidSumLine = lines[4];
         String[] paidSumLines = paidSumLine.split(" ");
-        double paidSum = Integer.parseInt(paidSumLines[1]);
+        int paidSum = Integer.parseInt(paidSumLines[0]);
 
         String paidToLine = lines[5];
         String paidToSplitAtExpression = paidToLine.split(">")[0];

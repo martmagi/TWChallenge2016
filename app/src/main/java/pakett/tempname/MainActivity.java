@@ -10,6 +10,7 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.Base64;
 import com.google.api.client.util.ExponentialBackOff;
 
 import com.google.api.services.gmail.Gmail;
@@ -20,6 +21,9 @@ import com.google.api.services.gmail.model.*;
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -28,8 +32,10 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.NotificationCompat;
 import android.text.TextUtils;
 import android.text.method.ScrollingMovementMethod;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -39,6 +45,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 public class MainActivity extends Activity {
     GoogleAccountCredential mCredential;
@@ -268,24 +275,44 @@ public class MainActivity extends Activity {
             // Get the labels in the user's account.
             String user = "me";
             List<String> labels = new ArrayList<String>();
-            ListLabelsResponse listResponse =
-                    mService.users().labels().list(user).execute();
 
-            ListMessagesResponse messages =
-                    mService.users().messages().list(user).execute();
+            ListMessagesResponse messages = mService.users().messages().list(user).execute();
+            List<List<String>> found = new ArrayList<>();
+            List<String> metaHeaders = new ArrayList<>();
+            metaHeaders.add("Return-Path");
+            metaHeaders.add("Date");
 
-            ListMessagesResponse test = mService.users().messages().list(user).execute();
+            for (Message message : messages.getMessages()){
+                List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).execute().getPayload().getHeaders();
+                String date = "";
+                String sender = "";
 
-            if (messages == null){
-                Toast.makeText(MainActivity.this,"Is null", Toast.LENGTH_LONG).show();
+                boolean foundEntry = false;
+                List<String> newEntry = new ArrayList();
+                for(MessagePartHeader header : headers){
+                    if (header.getName().equals("Return-Path") && header.getValue().equals("<automailer@seb.ee>")){
+                        sender = header.getValue();
+                        String messageSnippet = mService.users().messages().get(user, message.getId()).execute().getSnippet();
+                        newEntry.add(sender);
+                        newEntry.add(messageSnippet);
+                        foundEntry = true;
+                        String content = new String(Base64.decodeBase64(mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData()), "UTF-8");
+                        System.out.println(content);
+                    }
+                    if (foundEntry && header.getName().equals("Date")){
+                        date = header.getValue();
+                        newEntry.add(date);
+                        found.add(newEntry);
+                        break;
+                    }
+                }
             }
-            for (Label label : listResponse.getLabels()) {
-                labels.add(label.getName());
+            for (List<String> data : found){
+                System.out.println(
+                        data
+                );
             }
 
-            //for (Message message : messages.getMessages()){
-            //    labels.add(message.getRaw());
-            //}
             return labels;
         }
 
@@ -327,5 +354,26 @@ public class MainActivity extends Activity {
                 mOutputText.setText("Request cancelled.");
             }
         }
+    }
+    public void callNotification(View v) {
+        //notification shit
+        int notificationId = new Random().nextInt(); // just use a counter in some util class...
+        PendingIntent dismissIntent = NotificationActivity.getDismissIntent(notificationId, this);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
+        builder.setPriority(NotificationCompat.PRIORITY_MAX) //HIGH, MAX, FULL_SCREEN and setDefaults(Notification.DEFAULT_ALL) will make it a Heads Up Display Style
+                .setDefaults(Notification.DEFAULT_ALL) // also requires VIBRATE permission
+                .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark) // Required!
+                .setContentTitle("You have spent some money!")
+                .setContentText("Was it really necessary?")
+                .setAutoCancel(true)
+                .addAction(R.drawable.common_google_signin_btn_icon_dark_normal, "Not really..", dismissIntent)
+                .addAction(R.drawable.common_google_signin_btn_icon_dark_normal, "Of course!", dismissIntent);
+
+        // Gets an instance of the NotificationManager service
+        NotificationManager notifyMgr = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+
+        // Builds the notification and issues it.
+        notifyMgr.notify(notificationId, builder.build());
     }
 }
