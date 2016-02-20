@@ -85,18 +85,19 @@ public class MainActivity extends AppCompatActivity {
         ReceiptAdapter itemsAdapter =
                 new ReceiptAdapter(this, 0, list);
         recieptView.setAdapter(itemsAdapter);
-        //sforGoogle();??
+
+        forGoogle();
 
     }
 
     private void forGoogle(){
-        LinearLayout activityLayout = new LinearLayout(this);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.MATCH_PARENT);
-        activityLayout.setLayoutParams(lp);
-        activityLayout.setOrientation(LinearLayout.VERTICAL);
-        activityLayout.setPadding(16, 16, 16, 16);
+        //LinearLayout activityLayout = new LinearLayout(this);
+        //LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+        //        LinearLayout.LayoutParams.MATCH_PARENT,
+        //        LinearLayout.LayoutParams.MATCH_PARENT);
+        //activityLayout.setLayoutParams(lp);
+        //activityLayout.setOrientation(LinearLayout.VERTICAL);
+        //activityLayout.setPadding(16, 16, 16, 16);
 
         mydb = new DBHelper(this);
 
@@ -104,17 +105,17 @@ public class MainActivity extends AppCompatActivity {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        mOutputText = new TextView(this);
-        mOutputText.setLayoutParams(tlp);
-        mOutputText.setPadding(16, 16, 16, 16);
-        mOutputText.setVerticalScrollBarEnabled(true);
-        mOutputText.setMovementMethod(new ScrollingMovementMethod());
-        activityLayout.addView(mOutputText);
+        //mOutputText = new TextView(this);
+        //mOutputText.setLayoutParams(tlp);
+        //mOutputText.setPadding(16, 16, 16, 16);
+        //mOutputText.setVerticalScrollBarEnabled(true);
+        //mOutputText.setMovementMethod(new ScrollingMovementMethod());
+        //activityLayout.addView(mOutputText);
 
         mProgress = new ProgressDialog(this);
-        mProgress.setMessage("Calling Gmail API ...");
+        mProgress.setMessage("Looking for new purchases");
 
-        setContentView(activityLayout);
+        //setContentView(activityLayout);
 
         // Initialize credentials and service object.
         SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
@@ -132,12 +133,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        /*if (isGooglePlayServicesAvailable()) {
+        if (isGooglePlayServicesAvailable()) {
             refreshResults();
         } else {
-            mOutputText.setText("Google Play Services required: " +
-                    "after installing, close and relaunch this app.");
-        }*/
+            //mOutputText.setText("Google Play Services required: " +
+            //        "after installing, close and relaunch this app.");
+        }
     }
 
     /**
@@ -174,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
                         editor.apply();
                     }
                 } else if (resultCode == RESULT_CANCELED) {
-                    mOutputText.setText("Account unspecified.");
+                    //mOutputText.setText("Account unspecified.");
                 }
                 break;
             case REQUEST_AUTHORIZATION:
@@ -199,7 +200,7 @@ public class MainActivity extends AppCompatActivity {
             if (isDeviceOnline()) {
                 new MakeRequestTask(mCredential).execute();
             } else {
-                mOutputText.setText("No network connection available.");
+                //mOutputText.setText("No network connection available.");
             }
         }
     }
@@ -299,7 +300,7 @@ public class MainActivity extends AppCompatActivity {
             // Get the labels in the user's account.
             String user = "me";
             List<String> labels = new ArrayList<String>();
-
+            System.out.println("hahaah");
             ListMessagesResponse messages = mService.users().messages().list(user).execute();
             List<Receipt> found = new ArrayList<>();
             List<String> metaHeaders = new ArrayList<>();
@@ -341,7 +342,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPreExecute() {
-            mOutputText.setText("");
+            //mOutputText.setText("");
             mProgress.show();
         }
 
@@ -349,7 +350,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(List<String> output) {
             mProgress.hide();
             if (output == null || output.size() == 0) {
-                mOutputText.setText("No results returned.");
+                //mOutputText.setText("No results returned.");
             } else {
                 output.add(0, "Data retrieved using the Gmail API:");
                 //mOutputText.setText(TextUtils.join("\n", output));
@@ -369,11 +370,11 @@ public class MainActivity extends AppCompatActivity {
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             MainActivity.REQUEST_AUTHORIZATION);
                 } else {
-                    mOutputText.setText("The following error occurred:\n"
-                            + mLastError.getMessage());
+                    //mOutputText.setText("The following error occurred:\n"
+                    //        + mLastError.getMessage());
                 }
             } else {
-                mOutputText.setText("Request cancelled.");
+                //mOutputText.setText("Request cancelled.");
             }
         }
     }
@@ -385,12 +386,12 @@ public class MainActivity extends AppCompatActivity {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setPriority(NotificationCompat.PRIORITY_MAX) //HIGH, MAX, FULL_SCREEN and setDefaults(Notification.DEFAULT_ALL) will make it a Heads Up Display Style
                 .setDefaults(Notification.DEFAULT_ALL) // also requires VIBRATE permission
-                .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark) // Required!
+                .setSmallIcon(R.mipmap.ic_launcher) // Required!
                 .setContentTitle("You spent " + receipt.getPrice() + " at " + receipt.getCompanyName())
                 .setContentText("Was it really necessary?")
                 .setAutoCancel(true)
-                .addAction(R.drawable.common_google_signin_btn_icon_dark_normal, "Not really..", dismissIntent)
-                .addAction(R.drawable.common_google_signin_btn_icon_dark_normal, "Of course!", dismissIntent);
+                .addAction(R.mipmap.ic_thumb_down_black_24dp, "Not really..", dismissIntent)
+                .addAction(R.mipmap.ic_thumb_up_black_24dp, "Of course!", dismissIntent);
 
         // Gets an instance of the NotificationManager service
         NotificationManager notifyMgr = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
