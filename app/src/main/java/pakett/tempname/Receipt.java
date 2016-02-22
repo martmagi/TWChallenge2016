@@ -7,15 +7,16 @@ import java.util.Date;
  * Created by Mart on 20/02/2016.
  */
 public class Receipt {
+    private int id;
     private boolean useful;
     private String companyName;
     private int price;
-    private String date;
+    private int date;
 
     public Receipt() {
     }
 
-    public Receipt(String companyName, int price, String date) {
+    public Receipt(String companyName, int price, int date) {
         this.companyName = companyName;
         this.price = price;
         this.date = date;
@@ -45,15 +46,17 @@ public class Receipt {
         this.price = price;
     }
 
-    public String getDate() {
+    public int getDate() {
         return this.date;
     }
 
-    public void setDate(String date) {
-        this.date = date;
-    }
+    public void setDate(int date) {this.date = date;}
 
-    public static Receipt stringToReceipt(String string, String date) {
+    public int getId(){return this.id;}
+
+    public void setId(int id) {this.id = id;}
+
+    public static Receipt stringToReceipt(String string, int date) {
         String[] lines = string.split("\\r\\n");
         String paidSumLine = lines[4];
         String[] paidSumLines = paidSumLine.split(" ");

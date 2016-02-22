@@ -44,6 +44,7 @@ import android.widget.Toast;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
@@ -66,6 +67,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         LinearLayout activityLayout = new LinearLayout(this);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -75,6 +77,12 @@ public class MainActivity extends Activity {
         activityLayout.setPadding(16, 16, 16, 16);
 
         mydb = new DBHelper(this);
+        mydb.readFromDB();
+        mydb.insertIntoDB(new Receipt("Peeter", 900, mydb.calcDate(0)));
+        mydb.readSpecificFromDB(1);
+        mydb.readSpecificFromDB(2);
+        mydb.readSpecificFromDB(3);
+        mydb.closeDB();
 
         ViewGroup.LayoutParams tlp = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -285,7 +293,8 @@ public class MainActivity extends Activity {
             int counter = 0;
             for (Message message : messages.getMessages()){
                 List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).execute().getPayload().getHeaders();
-                String date = "";
+                //String date = "";
+                int date = mydb.calcDate(0);
                 String content = "";
 
                 boolean foundEntry = false;
@@ -295,7 +304,7 @@ public class MainActivity extends Activity {
                         content = new String(Base64.decodeBase64(mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData()), "UTF-8");
                     }
                     if (foundEntry && header.getName().equals("Date")){
-                        date = header.getValue();
+                        //date = header.getValue();
                         found.add(Receipt.stringToReceipt(content, date));
                         break;
                     }
