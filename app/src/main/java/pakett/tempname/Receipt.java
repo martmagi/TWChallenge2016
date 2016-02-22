@@ -1,8 +1,12 @@
 package pakett.tempname;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.Locale;
 
 import pakett.tempname.Models.ReceiptContent;
 
@@ -12,8 +16,8 @@ import pakett.tempname.Models.ReceiptContent;
 public class Receipt {
     private boolean useful;
     private String companyName;
-    private int price;
-    private String date;
+    private double price;
+    private Date date;
 
     public ArrayList<ReceiptContent> getContentList() {
         return contentList;
@@ -27,7 +31,7 @@ public class Receipt {
     public Receipt() {
     }
 
-    public Receipt(String companyName, int price, String date) {
+    public Receipt(String companyName, double price, Date date) {
         this.companyName = companyName;
         this.price = price;
         this.date = date;
@@ -74,19 +78,19 @@ public class Receipt {
         this.price = price;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return this.date;
     }
 
-    public void setDate(String date) {
+    public void setDate(Date date) {
         this.date = date;
     }
 
-    public static Receipt stringToReceipt(String string, String date) {
+    public static Receipt stringToReceipt(String string, String stringDate) {
         String[] lines = string.split("\\r\\n");
-        String paidSumLine = lines[4];
+        String paidSumLine = lines[3];
         String[] paidSumLines = paidSumLine.split(" ");
-        int paidSum = Integer.parseInt(paidSumLines[0].replace(" ",""));
+        double paidSum = Double.parseDouble(paidSumLines[1].replace(" EUR", "").replace("-",""));
 
         String paidToLine = lines[5];
         String paidToSplitAtExpression = paidToLine.split(">")[0];
@@ -99,8 +103,18 @@ public class Receipt {
             companyName += paidToFullExpression[i];
         }
 
-        Receipt receipt = new Receipt(companyName, paidSum, date);
-        return receipt;
+        return new Receipt(companyName, paidSum, parseDateString(stringDate));
+    }
+
+    public static Date parseDateString(String stringDate){
+        DateFormat formatter = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss ZZZ", Locale.ENGLISH);
+
+        try {
+            return formatter.parse(stringDate);
+        } catch (ParseException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
     @Override

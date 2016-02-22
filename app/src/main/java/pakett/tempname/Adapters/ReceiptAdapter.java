@@ -49,9 +49,9 @@ public class ReceiptAdapter extends ArrayAdapter<Receipt> {
         TextView date = (TextView) v.findViewById(R.id.receipt_date);
         TextView total = (TextView) v.findViewById(R.id.receipt_total);
 
-        date.setText(receipt.getDate());
+        date.setText(receipt.getDate().toString());
         total.setText(receipt.getPrice() + " €");
-        System.out.println(receipt.getContentList().size());
+
         int i = receipt.getContentList().size()/3*2;
         int b = 1;
         for (ReceiptContent content:receipt.getContentList()

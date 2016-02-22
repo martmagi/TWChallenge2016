@@ -18,6 +18,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
+import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -41,9 +42,14 @@ import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePartHeader;
 
 import java.io.IOException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 
 import pakett.tempname.Adapters.ReceiptAdapter;
@@ -75,9 +81,9 @@ public class MainActivity extends AppCompatActivity {
 
         final ArrayList<Receipt> list = new ArrayList<Receipt>();
 
-            Receipt receipt1 = new Receipt("1", 36, "20.02.2016");
-            Receipt receipt2 = new Receipt("2", 54, "12.02.2016 - 19.02.2016");
-            Receipt receipt3 = new Receipt("3", 126, "12.01.2016 - 12.02.2016");
+            Receipt receipt1 = new Receipt("1", 36, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
+            Receipt receipt2 = new Receipt("2", 54, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
+            Receipt receipt3 = new Receipt("3", 126, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
 
             list.add(receipt1);
             list.add(receipt2);
@@ -100,7 +106,6 @@ public class MainActivity extends AppCompatActivity {
         //activityLayout.setPadding(16, 16, 16, 16);
 
         mydb = new DBHelper(this);
-
         ViewGroup.LayoutParams tlp = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -298,47 +303,49 @@ public class MainActivity extends AppCompatActivity {
          */
         private List<String> getDataFromApi() throws IOException {
             // Get the labels in the user's account.
-            String user = "me";
-            List<String> labels = new ArrayList<String>();
-            System.out.println("hahaah");
-            ListMessagesResponse messages = mService.users().messages().list(user).execute();
-            List<Receipt> found = new ArrayList<>();
-            List<String> metaHeaders = new ArrayList<>();
-            metaHeaders.add("Return-Path");
-            metaHeaders.add("Date");
-            int counter = 0;
-            for (Message message : messages.getMessages()){
-                List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).execute().getPayload().getHeaders();
-                String date = "";
-                String content = "";
-
-                boolean foundEntry = false;
-                for(MessagePartHeader header : headers){
-                    if (header.getName().equals("Return-Path") && header.getValue().equals("<mart.magi@outlook.com>")){
-                        foundEntry = true;
-                        content = new String(Base64.decodeBase64(mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData()), "UTF-8");
+            try{
+                String user = "me";
+                List<String> labels = new ArrayList<String>();
+                ListMessagesResponse messages = mService.users().messages().list(user).execute();
+                List<Receipt> found = new ArrayList<>();
+                List<String> metaHeaders = new ArrayList<>();
+                metaHeaders.add("Return-Path");
+                metaHeaders.add("Date");
+                int counter = 0;
+                for (Message message : messages.getMessages()){
+                    List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).execute().getPayload().getHeaders();
+                    String date = "";
+                    String content = "";
+                    boolean foundEntry = false;
+                    for(MessagePartHeader header : headers){
+                        if (header.getName().equals("Return-Path") && header.getValue().equals("<automailer@seb.ee>")){
+                            foundEntry = true;
+                            content = new String(Base64.decodeBase64(mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData()), "UTF-8");
+                        }
+                        if (foundEntry && header.getName().equals("Date")){
+                            String dateString = header.getValue();
+                            found.add(Receipt.stringToReceipt(content, dateString));
+                            break;
+                        }
                     }
-                    if (foundEntry && header.getName().equals("Date")){
-                        date = header.getValue();
-                        found.add(Receipt.stringToReceipt(content, date));
+                    counter++;
+                    if (counter > 5){
                         break;
                     }
                 }
-                counter++;
-                if (counter > 5){
-                    break;
-                }
-            }
-            for (Receipt receipt : found){
                 DBHelper dbHelper = new DBHelper(MainActivity.this);
-                dbHelper.insertIntoDB(receipt);
-                System.out.println(dbHelper.readFromDB().get(0));
-                callNotification(null, receipt);
+                dbHelper.truncateDB();
+                for (Receipt receipt : found){
+                    callNotification(receipt);
+                }
+                dbHelper.readFromDB();
+                return labels;
+            }catch (Exception e){
+                e.printStackTrace();
+                return null;
             }
 
-            return labels;
         }
-
 
         @Override
         protected void onPreExecute() {
@@ -378,25 +385,48 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-    public void callNotification(View v, Receipt receipt) {
-        //notification shit
-        int notificationId = new Random().nextInt(); // just use a counter in some util class...
-        PendingIntent dismissIntent = NotificationActivity.getDismissIntent(notificationId, this);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
-        builder.setPriority(NotificationCompat.PRIORITY_MAX) //HIGH, MAX, FULL_SCREEN and setDefaults(Notification.DEFAULT_ALL) will make it a Heads Up Display Style
-                .setDefaults(Notification.DEFAULT_ALL) // also requires VIBRATE permission
-                .setSmallIcon(R.mipmap.ic_launcher) // Required!
-                .setContentTitle("You spent " + receipt.getPrice() + " at " + receipt.getCompanyName())
+    public void callNotification(Receipt receipt) {
+
+        //Create random ID for possible multiple notifications
+        int notificationId = new Random().nextInt();
+        Log.d("Notificationid", String.valueOf(notificationId));
+        //Create Intents for the BroadcastReceiver
+        //Decline button intent
+        Intent declineIntentBase = new Intent("pakett.tempname.decline");
+        declineIntentBase.putExtra("notificationId", notificationId);
+        declineIntentBase.putExtra("company", receipt.getCompanyName());
+        declineIntentBase.putExtra("price", receipt.getPrice());
+        declineIntentBase.putExtra("date", receipt.getDate());
+
+        //Accept button intent
+        Intent acceptIntentBase = new Intent("pakett.tempname.accept");
+        acceptIntentBase.putExtra("notificationId", notificationId);
+        acceptIntentBase.putExtra("company", receipt.getCompanyName());
+        acceptIntentBase.putExtra("price", receipt.getPrice());
+        acceptIntentBase.putExtra("date", receipt.getDate());
+
+        //Create the PendingIntents
+        PendingIntent declineIntent = PendingIntent.getBroadcast(MainActivity.this, 0, declineIntentBase, 0);
+        PendingIntent acceptIntent = PendingIntent.getBroadcast(MainActivity.this, 0, acceptIntentBase, 0);
+
+        //Create the notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext());
+        builder.setPriority(NotificationCompat.PRIORITY_MAX)
+                .setDefaults(Notification.DEFAULT_ALL)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentTitle("You spent " + receipt.getPrice() + " at " + receipt.getCompanyName() + " on " + receipt.getDate())
                 .setContentText("Was it really necessary?")
                 .setAutoCancel(true)
-                .addAction(R.mipmap.ic_thumb_down_black_24dp, "Not really..", dismissIntent)
-                .addAction(R.mipmap.ic_thumb_up_black_24dp, "Of course!", dismissIntent);
+                .addAction(R.mipmap.ic_thumb_down_black_24dp, "Not really..", declineIntent)
+                .addAction(R.mipmap.ic_thumb_up_black_24dp, "Of course!", acceptIntent);
 
         // Gets an instance of the NotificationManager service
         NotificationManager notifyMgr = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
 
+        Log.d("Notificationid", String.valueOf(notificationId));
         // Builds the notification and issues it.
         notifyMgr.notify(notificationId, builder.build());
+
     }
 }

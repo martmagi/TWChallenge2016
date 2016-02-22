@@ -30,15 +30,13 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity
-            android:name=".NotificationActivity"
-            android:label="@string/title_activity_notification"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="pakett.tempname.MainActivity" />
-        </activity>
+        <receiver android:name=".NotificationReceiver" >
+            <intent-filter>
+                <action android:name="pakett.tempname.decline" />
+                <action android:name="pakett.tempname.accept" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>
