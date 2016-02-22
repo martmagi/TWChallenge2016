@@ -19,15 +19,13 @@ import java.util.Locale;
 public class NotificationReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("Intent", "intent receiverd");
+        Log.d("Intent", "Intent received");
+
         //Get the extras
         Bundle bundle = intent.getExtras();
         int id = bundle.getInt("notificationId");
         String companyName = bundle.getString("company");
         double price = bundle.getDouble("price");
-
-        Log.d("Notification", String.valueOf(bundle.getInt("notificationId")));
-
         Date date = (Date)intent.getSerializableExtra("date");
 
         //Create the receipt
@@ -46,6 +44,6 @@ public class NotificationReceiver extends BroadcastReceiver {
 
         //Close the notification
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.cancel((int) id);
+        manager.cancel(0);
     }
 }

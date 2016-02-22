@@ -388,9 +388,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void callNotification(Receipt receipt) {
 
-        //Create random ID for possible multiple notifications
-        int notificationId = new Random().nextInt();
-        Log.d("Notificationid", String.valueOf(notificationId));
+        //Create const ID for possible multiple notifications
+        int notificationId = 0;
+
         //Create Intents for the BroadcastReceiver
         //Decline button intent
         Intent declineIntentBase = new Intent("pakett.tempname.decline");
@@ -424,7 +424,6 @@ public class MainActivity extends AppCompatActivity {
         // Gets an instance of the NotificationManager service
         NotificationManager notifyMgr = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
 
-        Log.d("Notificationid", String.valueOf(notificationId));
         // Builds the notification and issues it.
         notifyMgr.notify(notificationId, builder.build());
 
