@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal" android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="10dp"
+    android:background="#fff"
+    android:id="@+id/receipt_content_item">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Some thingie"
+            android:textSize="14sp"
+            android:layout_weight="1"
+            android:id="@+id/receipt_element_name"/>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="123 eur"
+            android:textSize="16sp"
+            android:layout_weight="1"
+            android:textAlignment="textEnd"
+            android:layout_gravity="end"
+            android:id="@+id/receipt_element_price"
+            android:textStyle="bold" />
+
+</LinearLayout>

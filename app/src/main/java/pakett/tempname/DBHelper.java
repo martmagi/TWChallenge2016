@@ -109,6 +109,7 @@ public class DBHelper extends SQLiteOpenHelper {
                 list.add(r);
             }while (c.moveToNext());
         }
+        System.out.println("PEETER " + list.size() + " " + a);
         return list;
     }
 

@@ -1,23 +1,5 @@
 package pakett.tempname;
 
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
-import com.google.api.client.extensions.android.http.AndroidHttp;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
-import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
-import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
-
-import com.google.api.client.http.HttpTransport;
-import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.Base64;
-import com.google.api.client.util.ExponentialBackOff;
-
-import com.google.api.services.gmail.Gmail;
-import com.google.api.services.gmail.GmailScopes;
-
-import com.google.api.services.gmail.model.*;
-
 import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Dialog;
@@ -33,13 +15,30 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-import android.text.TextUtils;
+import android.support.v7.app.ActionBarActivity;
+import android.support.v7.app.AppCompatActivity;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
+
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.GooglePlayServicesUtil;
+import com.google.api.client.extensions.android.http.AndroidHttp;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.GooglePlayServicesAvailabilityIOException;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.json.JsonFactory;
+import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.Base64;
+import com.google.api.client.util.ExponentialBackOff;
+import com.google.api.services.gmail.GmailScopes;
+import com.google.api.services.gmail.model.ListMessagesResponse;
+import com.google.api.services.gmail.model.Message;
+import com.google.api.services.gmail.model.MessagePartHeader;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,7 +47,11 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
-public class MainActivity extends Activity {
+import pakett.tempname.Adapters.ReceiptAdapter;
+//import pakett.tempname.Models.Receipt;
+
+
+public class MainActivity extends AppCompatActivity {
     GoogleAccountCredential mCredential;
     private TextView mOutputText;
     ProgressDialog mProgress;
@@ -75,10 +78,44 @@ public class MainActivity extends Activity {
         activityLayout.setLayoutParams(lp);
         activityLayout.setOrientation(LinearLayout.VERTICAL);
         activityLayout.setPadding(16, 16, 16, 16);
+        setContentView(R.layout.activity_main);
 
+        ListView recieptView = (ListView) findViewById(R.id.receipt_list);
+
+        final ArrayList<Receipt> list = new ArrayList<Receipt>();
+
+            Receipt receipt1 = new Receipt("1", 36, 384);
+            Receipt receipt2 = new Receipt("2", 54, 364);
+            Receipt receipt3 = new Receipt("3", 126, 380);
+
+            list.add(receipt1);
+            list.add(receipt2);
+            list.add(receipt3);
+        ReceiptAdapter itemsAdapter =
+                new ReceiptAdapter(this, 0, list);
+        recieptView.setAdapter(itemsAdapter);
+
+        forGoogle();
+
+    }
+
+    private void forGoogle(){
+        //LinearLayout activityLayout = new LinearLayout(this);
+        //LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+        //        LinearLayout.LayoutParams.MATCH_PARENT,
+        //        LinearLayout.LayoutParams.MATCH_PARENT);
+        //activityLayout.setLayoutParams(lp);
+        //activityLayout.setOrientation(LinearLayout.VERTICAL);
+        //activityLayout.setPadding(16, 16, 16, 16);
         mydb = new DBHelper(this);
         mydb.readFromDB();
         mydb.insertIntoDB(new Receipt("Peeter", 900, mydb.calcDate(0)));
+
+        //The number in the argument defines the length of the period in stages
+        //1-current day
+        //2-last week
+        //3-last month
+
         mydb.readSpecificFromDB(1);
         mydb.readSpecificFromDB(2);
         mydb.readSpecificFromDB(3);
@@ -88,17 +125,17 @@ public class MainActivity extends Activity {
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        mOutputText = new TextView(this);
-        mOutputText.setLayoutParams(tlp);
-        mOutputText.setPadding(16, 16, 16, 16);
-        mOutputText.setVerticalScrollBarEnabled(true);
-        mOutputText.setMovementMethod(new ScrollingMovementMethod());
-        activityLayout.addView(mOutputText);
+        //mOutputText = new TextView(this);
+        //mOutputText.setLayoutParams(tlp);
+        //mOutputText.setPadding(16, 16, 16, 16);
+        //mOutputText.setVerticalScrollBarEnabled(true);
+        //mOutputText.setMovementMethod(new ScrollingMovementMethod());
+        //activityLayout.addView(mOutputText);
 
         mProgress = new ProgressDialog(this);
-        mProgress.setMessage("Calling Gmail API ...");
+        mProgress.setMessage("Looking for new purchases");
 
-        setContentView(activityLayout);
+        //setContentView(activityLayout);
 
         // Initialize credentials and service object.
         SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
@@ -108,7 +145,6 @@ public class MainActivity extends Activity {
                 .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
 
     }
-
 
     /**
      * Called whenever this activity is pushed to the foreground, such as after
@@ -120,8 +156,8 @@ public class MainActivity extends Activity {
         if (isGooglePlayServicesAvailable()) {
             refreshResults();
         } else {
-            mOutputText.setText("Google Play Services required: " +
-                    "after installing, close and relaunch this app.");
+            //mOutputText.setText("Google Play Services required: " +
+            //        "after installing, close and relaunch this app.");
         }
     }
 
@@ -159,7 +195,7 @@ public class MainActivity extends Activity {
                         editor.apply();
                     }
                 } else if (resultCode == RESULT_CANCELED) {
-                    mOutputText.setText("Account unspecified.");
+                    //mOutputText.setText("Account unspecified.");
                 }
                 break;
             case REQUEST_AUTHORIZATION:
@@ -184,7 +220,7 @@ public class MainActivity extends Activity {
             if (isDeviceOnline()) {
                 new MakeRequestTask(mCredential).execute();
             } else {
-                mOutputText.setText("No network connection available.");
+                //mOutputText.setText("No network connection available.");
             }
         }
     }
@@ -284,7 +320,7 @@ public class MainActivity extends Activity {
             // Get the labels in the user's account.
             String user = "me";
             List<String> labels = new ArrayList<String>();
-
+            System.out.println("hahaah");
             ListMessagesResponse messages = mService.users().messages().list(user).execute();
             List<Receipt> found = new ArrayList<>();
             List<String> metaHeaders = new ArrayList<>();
@@ -327,7 +363,7 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onPreExecute() {
-            mOutputText.setText("");
+            //mOutputText.setText("");
             mProgress.show();
         }
 
@@ -335,7 +371,7 @@ public class MainActivity extends Activity {
         protected void onPostExecute(List<String> output) {
             mProgress.hide();
             if (output == null || output.size() == 0) {
-                mOutputText.setText("No results returned.");
+                //mOutputText.setText("No results returned.");
             } else {
                 output.add(0, "Data retrieved using the Gmail API:");
                 //mOutputText.setText(TextUtils.join("\n", output));
@@ -355,11 +391,11 @@ public class MainActivity extends Activity {
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             MainActivity.REQUEST_AUTHORIZATION);
                 } else {
-                    mOutputText.setText("The following error occurred:\n"
-                            + mLastError.getMessage());
+                    //mOutputText.setText("The following error occurred:\n"
+                    //        + mLastError.getMessage());
                 }
             } else {
-                mOutputText.setText("Request cancelled.");
+                //mOutputText.setText("Request cancelled.");
             }
         }
     }
@@ -371,12 +407,12 @@ public class MainActivity extends Activity {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this);
         builder.setPriority(NotificationCompat.PRIORITY_MAX) //HIGH, MAX, FULL_SCREEN and setDefaults(Notification.DEFAULT_ALL) will make it a Heads Up Display Style
                 .setDefaults(Notification.DEFAULT_ALL) // also requires VIBRATE permission
-                .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark) // Required!
+                .setSmallIcon(R.mipmap.ic_launcher) // Required!
                 .setContentTitle("You spent " + receipt.getPrice() + " at " + receipt.getCompanyName())
                 .setContentText("Was it really necessary?")
                 .setAutoCancel(true)
-                .addAction(R.drawable.common_google_signin_btn_icon_dark_normal, "Not really..", dismissIntent)
-                .addAction(R.drawable.common_google_signin_btn_icon_dark_normal, "Of course!", dismissIntent);
+                .addAction(R.mipmap.ic_thumb_down_black_24dp, "Not really..", dismissIntent)
+                .addAction(R.mipmap.ic_thumb_up_black_24dp, "Of course!", dismissIntent);
 
         // Gets an instance of the NotificationManager service
         NotificationManager notifyMgr = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
