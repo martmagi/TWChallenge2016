@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,10 +14,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.view.ViewGroup;
+import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
@@ -46,8 +44,8 @@ import pakett.tempname.Adapters.ReceiptAdapter;
 
 public class MainActivity extends AppCompatActivity {
     GoogleAccountCredential mCredential;
-    ProgressDialog mProgress;
-    DBHelper mydb;
+    //ProgressDialog mProgress;
+    DBHelper db;
 
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
@@ -75,13 +73,11 @@ public class MainActivity extends AppCompatActivity {
 
         ListView recieptView = (ListView) findViewById(R.id.receipt_list);
 
-        final ArrayList<Receipt> list = new ArrayList<Receipt>();
-
+        final ArrayList<Receipt> list = new ArrayList<>();
 
         Receipt receipt1 = new Receipt("1", 36, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
         Receipt receipt2 = new Receipt("2", 54, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
         Receipt receipt3 = new Receipt("3", 126, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
-
 
         list.add(receipt1);
         list.add(receipt2);
@@ -89,41 +85,27 @@ public class MainActivity extends AppCompatActivity {
         ReceiptAdapter itemsAdapter =
                 new ReceiptAdapter(this, 0, list);
         recieptView.setAdapter(itemsAdapter);
-
-        forGoogle();
-
+        Thread thread = new Thread() {
+            @Override
+            public void run() {
+                forGoogle();
+            }
+        };
+        thread.run();
     }
 
     private void forGoogle() {
-        mydb = new DBHelper(this);
-        mydb.readFromDB();
-        //mydb.insertIntoDB(new Receipt("Peeter", 900, mydb.calcDate(0)));
+        db = new DBHelper(this);
+        db.readFromDB();
+        // db.insertIntoDB(new Receipt("Peeter", 900, db.calcDate(0)));
 
-        //The number in the argument defines the length of the period in stages
-        //1-current day
-        //2-last week
-        //3-last month
+        // The number in the argument defines the length of the period in stages
+        // 1-current day, 2-last week, 3-last month
 
-        mydb.readSpecificFromDB(1);
-        mydb.readSpecificFromDB(2);
-        mydb.readSpecificFromDB(3);
-        mydb.closeDB();
-
-        ViewGroup.LayoutParams tlp = new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-
-        //mOutputText = new TextView(this);
-        //mOutputText.setLayoutParams(tlp);
-        //mOutputText.setPadding(16, 16, 16, 16);
-        //mOutputText.setVerticalScrollBarEnabled(true);
-        //mOutputText.setMovementMethod(new ScrollingMovementMethod());
-        //activityLayout.addView(mOutputText);
-
-        mProgress = new ProgressDialog(this);
-        mProgress.setMessage("Looking for new purchases");
-
-        //setContentView(activityLayout);
+        db.readSpecificFromDB(1);
+        db.readSpecificFromDB(2);
+        db.readSpecificFromDB(3);
+        db.closeDB();
 
         // Initialize credentials and service object.
         SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
@@ -131,7 +113,6 @@ public class MainActivity extends AppCompatActivity {
                 getApplicationContext(), Arrays.asList(SCOPES))
                 .setBackOff(new ExponentialBackOff())
                 .setSelectedAccountName(settings.getString(PREF_ACCOUNT_NAME, null));
-
     }
 
     /**
@@ -143,9 +124,6 @@ public class MainActivity extends AppCompatActivity {
         super.onResume();
         if (isGooglePlayServicesAvailable()) {
             refreshResults();
-        } else {
-            //mOutputText.setText("Google Play Services required: " +
-            //        "after installing, close and relaunch this app.");
         }
     }
 
@@ -184,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
                         editor.apply();
                     }
                 } else if (resultCode == RESULT_CANCELED) {
-                    //mOutputText.setText("Account unspecified.");
+                    Log.d("Google", "Account unspecified");
                 }
                 break;
             case REQUEST_AUTHORIZATION:
@@ -209,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
             if (isDeviceOnline()) {
                 new MakeRequestTask(mCredential).execute();
             } else {
-                //mOutputText.setText("No network connection available.");
+                Log.d("Google", "No network connection available.");
             }
         }
     }
@@ -305,77 +283,50 @@ public class MainActivity extends AppCompatActivity {
         }
 
         /**
-         * Fetch a list of Gmail labels attached to the specified account.
+         * Fetch a list of Gmail message that came from seb.
          *
          * @return List of Strings labels.
          * @throws IOException
          */
         private List<String> getDataFromApi() throws IOException {
-            // Get the labels in the user's account.
-            try {
-                String user = "me";
-                List<String> labels = new ArrayList<String>();
-                ListMessagesResponse messages = mService.users().messages().list(user).execute();
-                List<Receipt> found = new ArrayList<>();
-                List<String> metaHeaders = new ArrayList<>();
-                metaHeaders.add("Return-Path");
-                metaHeaders.add("Date");
-                int counter = 0;
-                for (Message message : messages.getMessages()) {
-                    List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).execute().getPayload().getHeaders();
-                    String date = "";
-                    String content = "";
-                    boolean foundEntry = false;
-                    for (MessagePartHeader header : headers) {
-                        if (header.getName().equals("Return-Path") && header.getValue().equals("<automailer@seb.ee>")) {
-                            foundEntry = true;
-                            content = new String(Base64.decodeBase64(mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData()), "UTF-8");
-                        }
-                        if (foundEntry && header.getName().equals("Date")) {
-                            String dateString = header.getValue();
-                            found.add(Receipt.stringToReceipt(content, dateString));
-                            break;
-                        }
+            String user = "me";
+            ListMessagesResponse messages = mService.users().messages().list(user).execute();
+            List<Receipt> found = new ArrayList<>();
+            List<String> metaHeaders = new ArrayList<>();
+            metaHeaders.add("Return-Path");
+            metaHeaders.add("Date");
+            int counter = 0;
+            for (Message message : messages.getMessages()) {
+                List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).execute().getPayload().getHeaders();
+                String content = "";
+                boolean foundEntry = false;
+                for (MessagePartHeader header : headers) {
+                    if (header.getName().equals("Return-Path") && header.getValue().equals("<automailer@seb.ee>")) {
+                        foundEntry = true;
+                        content = new String(Base64.decodeBase64(mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData()), "UTF-8");
                     }
-                    counter++;
-                    if (counter > 5) {
+                    if (foundEntry && header.getName().equals("Date")) {
+                        String dateString = header.getValue();
+                        found.add(Receipt.stringToReceipt(content, dateString));
                         break;
                     }
                 }
-                DBHelper dbHelper = new DBHelper(MainActivity.this);
-                dbHelper.truncateDB();
-                for (Receipt receipt : found) {
-                    callNotification(receipt);
+                counter++;
+                if (counter > 5) {
+                    break;
                 }
-                dbHelper.readFromDB();
-                return labels;
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
             }
-
-        }
-
-        @Override
-        protected void onPreExecute() {
-            //mOutputText.setText("");
-            mProgress.show();
-        }
-
-        @Override
-        protected void onPostExecute(List<String> output) {
-            mProgress.hide();
-            if (output == null || output.size() == 0) {
-                //mOutputText.setText("No results returned.");
-            } else {
-                output.add(0, "Data retrieved using the Gmail API:");
-                //mOutputText.setText(TextUtils.join("\n", output));
+            DBHelper dbHelper = new DBHelper(MainActivity.this);
+            dbHelper.truncateDB();
+            for (Receipt receipt : found) {
+                callNotification(receipt);
             }
+            dbHelper.readFromDB();
+            return new ArrayList<>();
         }
 
         @Override
         protected void onCancelled() {
-            mProgress.hide();
             if (mLastError != null) {
                 if (mLastError instanceof GooglePlayServicesAvailabilityIOException) {
                     showGooglePlayServicesAvailabilityErrorDialog(
@@ -386,11 +337,8 @@ public class MainActivity extends AppCompatActivity {
                             ((UserRecoverableAuthIOException) mLastError).getIntent(),
                             MainActivity.REQUEST_AUTHORIZATION);
                 } else {
-                    //mOutputText.setText("The following error occurred:\n"
-                    //        + mLastError.getMessage());
+                    Log.d("Google", "Following error occured: " + mLastError.getMessage());
                 }
-            } else {
-                //mOutputText.setText("Request cancelled.");
             }
         }
     }
