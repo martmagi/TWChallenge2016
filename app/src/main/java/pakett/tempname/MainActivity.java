@@ -1,7 +1,6 @@
 package pakett.tempname;
 
 import android.accounts.AccountManager;
-import android.app.Activity;
 import android.app.Dialog;
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -15,11 +14,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
-import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -42,23 +37,15 @@ import com.google.api.services.gmail.model.Message;
 import com.google.api.services.gmail.model.MessagePartHeader;
 
 import java.io.IOException;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
-import java.util.Random;
 
 import pakett.tempname.Adapters.ReceiptAdapter;
-//import pakett.tempname.Models.Receipt;
 
 
 public class MainActivity extends AppCompatActivity {
     GoogleAccountCredential mCredential;
-    private TextView mOutputText;
     ProgressDialog mProgress;
     DBHelper mydb;
 
@@ -66,28 +53,39 @@ public class MainActivity extends AppCompatActivity {
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
     private static final String PREF_ACCOUNT_NAME = "";
-    private static final String[] SCOPES = { GmailScopes.GMAIL_LABELS, GmailScopes.GMAIL_READONLY, GmailScopes.MAIL_GOOGLE_COM };
+    private static final String[] SCOPES = {GmailScopes.GMAIL_LABELS, GmailScopes.GMAIL_READONLY, GmailScopes.MAIL_GOOGLE_COM};
 
     /**
      * Create the main activity.
+     *
      * @param savedInstanceState previously saved instance data.
      */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        LinearLayout activityLayout = new LinearLayout(this);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.MATCH_PARENT);
+        activityLayout.setLayoutParams(lp);
+        activityLayout.setOrientation(LinearLayout.VERTICAL);
+        activityLayout.setPadding(16, 16, 16, 16);
         setContentView(R.layout.activity_main);
 
         ListView recieptView = (ListView) findViewById(R.id.receipt_list);
 
         final ArrayList<Receipt> list = new ArrayList<Receipt>();
 
-            Receipt receipt1 = new Receipt("1", 36, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
-            Receipt receipt2 = new Receipt("2", 54, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
-            Receipt receipt3 = new Receipt("3", 126, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
 
-            list.add(receipt1);
-            list.add(receipt2);
-            list.add(receipt3);
+        Receipt receipt1 = new Receipt("1", 36, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
+        Receipt receipt2 = new Receipt("2", 54, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
+        Receipt receipt3 = new Receipt("3", 126, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
+
+
+        list.add(receipt1);
+        list.add(receipt2);
+        list.add(receipt3);
         ReceiptAdapter itemsAdapter =
                 new ReceiptAdapter(this, 0, list);
         recieptView.setAdapter(itemsAdapter);
@@ -96,16 +94,21 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    private void forGoogle(){
-        //LinearLayout activityLayout = new LinearLayout(this);
-        //LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-        //        LinearLayout.LayoutParams.MATCH_PARENT,
-        //        LinearLayout.LayoutParams.MATCH_PARENT);
-        //activityLayout.setLayoutParams(lp);
-        //activityLayout.setOrientation(LinearLayout.VERTICAL);
-        //activityLayout.setPadding(16, 16, 16, 16);
-
+    private void forGoogle() {
         mydb = new DBHelper(this);
+        mydb.readFromDB();
+        //mydb.insertIntoDB(new Receipt("Peeter", 900, mydb.calcDate(0)));
+
+        //The number in the argument defines the length of the period in stages
+        //1-current day
+        //2-last week
+        //3-last month
+
+        mydb.readSpecificFromDB(1);
+        mydb.readSpecificFromDB(2);
+        mydb.readSpecificFromDB(3);
+        mydb.closeDB();
+
         ViewGroup.LayoutParams tlp = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -150,17 +153,18 @@ public class MainActivity extends AppCompatActivity {
      * Called when an activity launched here (specifically, AccountPicker
      * and authorization) exits, giving you the requestCode you started it with,
      * the resultCode it returned, and any additional data from it.
+     *
      * @param requestCode code indicating which activity result is incoming.
-     * @param resultCode code indicating the result of the incoming
-     *     activity result.
-     * @param data Intent (containing result data) returned by incoming
-     *     activity result.
+     * @param resultCode  code indicating the result of the incoming
+     *                    activity result.
+     * @param data        Intent (containing result data) returned by incoming
+     *                    activity result.
      */
     @Override
     protected void onActivityResult(
             int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        switch(requestCode) {
+        switch (requestCode) {
             case REQUEST_GOOGLE_PLAY_SERVICES:
                 if (resultCode != RESULT_OK) {
                     isGooglePlayServicesAvailable();
@@ -221,6 +225,7 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * Checks whether the device currently has a network connection.
+     *
      * @return true if the device has a network connection, false otherwise.
      */
     private boolean isDeviceOnline() {
@@ -234,8 +239,9 @@ public class MainActivity extends AppCompatActivity {
      * Check that Google Play services APK is installed and up to date. Will
      * launch an error dialog for the user to update Google Play Services if
      * possible.
+     *
      * @return true if Google Play Services is available and up to
-     *     date on this device; false otherwise.
+     * date on this device; false otherwise.
      */
     private boolean isGooglePlayServicesAvailable() {
         final int connectionStatusCode =
@@ -243,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
         if (GooglePlayServicesUtil.isUserRecoverableError(connectionStatusCode)) {
             showGooglePlayServicesAvailabilityErrorDialog(connectionStatusCode);
             return false;
-        } else if (connectionStatusCode != ConnectionResult.SUCCESS ) {
+        } else if (connectionStatusCode != ConnectionResult.SUCCESS) {
             return false;
         }
         return true;
@@ -252,8 +258,9 @@ public class MainActivity extends AppCompatActivity {
     /**
      * Display an error dialog showing that Google Play Services is missing
      * or out of date.
+     *
      * @param connectionStatusCode code describing the presence (or lack of)
-     *     Google Play Services on this device.
+     *                             Google Play Services on this device.
      */
     void showGooglePlayServicesAvailabilityErrorDialog(
             final int connectionStatusCode) {
@@ -283,6 +290,7 @@ public class MainActivity extends AppCompatActivity {
 
         /**
          * Background task to call Gmail API.
+         *
          * @param params no parameters needed for this task.
          */
         @Override
@@ -298,12 +306,13 @@ public class MainActivity extends AppCompatActivity {
 
         /**
          * Fetch a list of Gmail labels attached to the specified account.
+         *
          * @return List of Strings labels.
          * @throws IOException
          */
         private List<String> getDataFromApi() throws IOException {
             // Get the labels in the user's account.
-            try{
+            try {
                 String user = "me";
                 List<String> labels = new ArrayList<String>();
                 ListMessagesResponse messages = mService.users().messages().list(user).execute();
@@ -312,35 +321,35 @@ public class MainActivity extends AppCompatActivity {
                 metaHeaders.add("Return-Path");
                 metaHeaders.add("Date");
                 int counter = 0;
-                for (Message message : messages.getMessages()){
+                for (Message message : messages.getMessages()) {
                     List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).execute().getPayload().getHeaders();
                     String date = "";
                     String content = "";
                     boolean foundEntry = false;
-                    for(MessagePartHeader header : headers){
-                        if (header.getName().equals("Return-Path") && header.getValue().equals("<automailer@seb.ee>")){
+                    for (MessagePartHeader header : headers) {
+                        if (header.getName().equals("Return-Path") && header.getValue().equals("<automailer@seb.ee>")) {
                             foundEntry = true;
                             content = new String(Base64.decodeBase64(mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData()), "UTF-8");
                         }
-                        if (foundEntry && header.getName().equals("Date")){
+                        if (foundEntry && header.getName().equals("Date")) {
                             String dateString = header.getValue();
                             found.add(Receipt.stringToReceipt(content, dateString));
                             break;
                         }
                     }
                     counter++;
-                    if (counter > 5){
+                    if (counter > 5) {
                         break;
                     }
                 }
                 DBHelper dbHelper = new DBHelper(MainActivity.this);
                 dbHelper.truncateDB();
-                for (Receipt receipt : found){
+                for (Receipt receipt : found) {
                     callNotification(receipt);
                 }
                 dbHelper.readFromDB();
                 return labels;
-            }catch (Exception e){
+            } catch (Exception e) {
                 e.printStackTrace();
                 return null;
             }

@@ -7,11 +7,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 /**
  * Created by Risto on 2/22/2016.
@@ -26,7 +22,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         int id = bundle.getInt("notificationId");
         String companyName = bundle.getString("company");
         double price = bundle.getDouble("price");
-        Date date = (Date)intent.getSerializableExtra("date");
+        Date date = (Date) intent.getSerializableExtra("date");
 
         //Create the receipt
         Receipt receipt = new Receipt(companyName, price, date);

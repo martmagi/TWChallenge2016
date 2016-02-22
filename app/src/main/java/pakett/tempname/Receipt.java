@@ -4,7 +4,6 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.Locale;
 
@@ -14,6 +13,7 @@ import pakett.tempname.Models.ReceiptContent;
  * Created by Mart on 20/02/2016.
  */
 public class Receipt {
+    private int id;
     private boolean useful;
     private String companyName;
     private double price;
@@ -30,6 +30,7 @@ public class Receipt {
     private ArrayList<ReceiptContent> contentList;
     public Receipt() {
     }
+
 
     public Receipt(String companyName, double price, Date date) {
         this.companyName = companyName;
@@ -78,6 +79,7 @@ public class Receipt {
         this.price = price;
     }
 
+
     public Date getDate() {
         return this.date;
     }
@@ -85,6 +87,10 @@ public class Receipt {
     public void setDate(Date date) {
         this.date = date;
     }
+
+    public int getId(){return this.id;}
+
+    public void setId(int id) {this.id = id;}
 
     public static Receipt stringToReceipt(String string, String stringDate) {
         String[] lines = string.split("\\r\\n");

@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
+import java.util.Calendar;
 
 /**
  * Created by Karl on 20.02.2016.
@@ -37,28 +38,30 @@ public class DBHelper extends SQLiteOpenHelper {
             + " DATE, " + KEY_COMP + " VARCHAR(50), " + KEY_SORTED
             + " BOOLEAN, " + KEY_SUM + " REAL" + ")";
 
-    public DBHelper(Context context){
+
+    public DBHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
+
     public void onCreate(SQLiteDatabase db) {
         Log.d("Database", "Creating table");
         db.execSQL(CREATE_TABLE_RECEIPT);
     }
+
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_RECEIPT);
     }
 
-    public void truncateDB(){
+    public void truncateDB() {
         SQLiteDatabase db = this.getReadableDatabase();
         db.execSQL("DELETE FROM " + TABLE_RECEIPT);
         db.execSQL("VACUUM " + TABLE_RECEIPT);
     }
 
-    public boolean insertIntoDB(Receipt receipt){
+    public boolean insertIntoDB(Receipt receipt) {
         Log.d("Database", "Inserting into database. Receipt: " + receipt);
-        try{
+        try {
             SQLiteDatabase db = this.getReadableDatabase();
-
             ContentValues values = new ContentValues();
             values.put(KEY_COMP, receipt.getCompanyName());
             values.put(KEY_SUM, receipt.getPrice());
@@ -67,13 +70,14 @@ public class DBHelper extends SQLiteOpenHelper {
 
             db.insert(TABLE_RECEIPT, null, values);
             return true;
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
             return false;
         }
 
     }
-    public ArrayList readFromDB(){
+
+    public ArrayList readFromDB() {
         Log.d("Database", "Reading from database");
         SQLiteDatabase db = this.getReadableDatabase();
         String selectQuery = "SELECT  * FROM " + TABLE_RECEIPT;
@@ -81,8 +85,8 @@ public class DBHelper extends SQLiteOpenHelper {
         Cursor cursor = db.rawQuery(selectQuery, null);
 
         if (cursor != null)
-            if (cursor.moveToFirst()){
-                do{
+            if (cursor.moveToFirst()) {
+                do {
                     Receipt newReceipt = new Receipt();
                     newReceipt.setPrice(cursor.getInt(cursor.getColumnIndex(KEY_SUM)));
                     newReceipt.setCompanyName((cursor.getString(cursor.getColumnIndex(KEY_COMP))));
@@ -95,20 +99,96 @@ public class DBHelper extends SQLiteOpenHelper {
                         e.printStackTrace();
                     }
 
-                    if (cursor.getString(cursor.getColumnIndex(KEY_SORTED)).equals("False")){
+                    if (cursor.getString(cursor.getColumnIndex(KEY_SORTED)).equals("False")) {
                         newReceipt.setUseful(false);
-                    }
-                    else{
+                    } else {
                         newReceipt.setUseful(true);
                     }
                     list.add(newReceipt);
                     Log.d("Database", "query from database: " + newReceipt);
-                }while (cursor.moveToNext());
+                } while (cursor.moveToNext());
             }
+
 
         if (cursor != null) {
             cursor.close();
         }
         return list;
+    }
+
+    public ArrayList readSpecificFromDB(int a) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int START_DATE;
+        int END_DATE;
+
+        START_DATE = calcDate(a);
+        END_DATE = calcDate(0);
+        if (a != 1) {
+            END_DATE -= 1;
+        }
+
+        String selectQuery = "SELECT  * FROM " + TABLE_RECEIPT + " WHERE " + KEY_DATE + " BETWEEN " + START_DATE + " AND " + END_DATE;
+        ArrayList<Receipt> list = new ArrayList<>();
+        Cursor cursor = db.rawQuery(selectQuery, null);
+
+        if (cursor.moveToFirst()) {
+            do {
+                Receipt newReceipt = new Receipt();
+                newReceipt.setPrice(cursor.getInt(cursor.getColumnIndex(KEY_SUM)));
+                newReceipt.setCompanyName((cursor.getString(cursor.getColumnIndex(KEY_COMP))));
+                DateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
+
+                try {
+                    Date date = formatter.parse(cursor.getString(cursor.getColumnIndex(KEY_DATE)));
+                    newReceipt.setDate(date);
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+
+                if (cursor.getString(cursor.getColumnIndex(KEY_SORTED)).equals("False")) {
+                    newReceipt.setUseful(false);
+                } else {
+                    newReceipt.setUseful(true);
+                }
+                list.add(newReceipt);
+                Log.d("Database", "query from database: " + newReceipt);
+            } while (cursor.moveToNext());
+        }
+        System.out.println("PEETER " + list.size() + " " + a);
+        return list;
+    }
+
+    public void closeDB() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        if (db != null && db.isOpen())
+            db.close();
+    }
+
+    public int calcDate(int margin) {
+        Calendar cal0 = Calendar.getInstance();
+        Calendar cal1 = Calendar.getInstance();
+
+        cal0.set(2015, 01, 01);
+        if (margin == 1) {
+            cal1.add(Calendar.DAY_OF_MONTH, -1);
+        } else if (margin == 2) {
+            cal1.add(Calendar.WEEK_OF_MONTH, -1);
+        } else if (margin == 3) {
+            cal1.add(Calendar.MONTH, -1);
+        }
+
+        return (int) ((cal1.getTime().getTime() - cal0.getTime().getTime()) / (1000 * 60 * 60 * 24));
+    }
+
+    public boolean assignSorted(int id, Receipt receipt) {
+        ContentValues values = new ContentValues();
+        values.put(KEY_ID, receipt.getCompanyName());
+        values.put(KEY_COMP, receipt.getCompanyName());
+        values.put(KEY_SUM, receipt.getPrice());
+        values.put(KEY_SORTED, true);
+        //values.put(KEY_DATE, receipt.getDate());
+
+        this.getReadableDatabase().update(TABLE_RECEIPT, values, KEY_ID, null);
+        return true;
     }
 }

@@ -6,16 +6,15 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
-
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Locale;
 
-import pakett.tempname.Receipt;
 import pakett.tempname.Models.ReceiptContent;
 import pakett.tempname.R;
+import pakett.tempname.Receipt;
 
 /**
  * Created by AnnaMC on 20.02.2016.
@@ -40,7 +39,6 @@ public class ReceiptAdapter extends ArrayAdapter<Receipt> {
         Receipt receipt = receipts.get(position);
         if (v == null) {
             v = inflater.inflate(R.layout.receipt_item, null);
-
         }
 
         LinearLayout contentHolder = (LinearLayout) v.findViewById(R.id.content_holder);
@@ -49,7 +47,7 @@ public class ReceiptAdapter extends ArrayAdapter<Receipt> {
         TextView date = (TextView) v.findViewById(R.id.receipt_date);
         TextView total = (TextView) v.findViewById(R.id.receipt_total);
 
-        date.setText(receipt.getDate().toString());
+        date.setText(new SimpleDateFormat("dd MMM yyyy", Locale.ENGLISH).format(receipt.getDate()));
         total.setText(receipt.getPrice() + " €");
 
         int i = receipt.getContentList().size()/3*2;
