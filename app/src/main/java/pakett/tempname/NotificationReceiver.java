@@ -24,6 +24,8 @@ public class NotificationReceiver extends BroadcastReceiver {
         double price = bundle.getDouble("price");
         Date date = (Date) intent.getSerializableExtra("date");
 
+        Log.d("Database intent id", String.valueOf(id));
+
         //Create the receipt
         Receipt receipt = new Receipt(companyName, price, date);
 
@@ -40,6 +42,6 @@ public class NotificationReceiver extends BroadcastReceiver {
 
         //Close the notification
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        manager.cancel(0);
+        manager.cancel(id);
     }
 }

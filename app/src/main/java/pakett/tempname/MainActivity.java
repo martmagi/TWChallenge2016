@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import pakett.tempname.Adapters.ReceiptAdapter;
 
@@ -299,6 +300,7 @@ public class MainActivity extends AppCompatActivity {
             for (Message message : messages.getMessages()) {
                 List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).execute().getPayload().getHeaders();
                 String content = "";
+                //Log.d("Message", String.valueOf(headers));
                 boolean foundEntry = false;
                 for (MessagePartHeader header : headers) {
                     if (header.getName().equals("Return-Path") && header.getValue().equals("<automailer@seb.ee>")) {
@@ -312,12 +314,14 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
                 counter++;
-                if (counter > 5) {
+                if (counter > 10) {
+                    Log.d("counter", String.valueOf(counter));
                     break;
                 }
             }
             DBHelper dbHelper = new DBHelper(MainActivity.this);
             dbHelper.truncateDB();
+            Log.d("Receipt", String.valueOf(found.size()));
             for (Receipt receipt : found) {
                 callNotification(receipt);
             }
@@ -346,7 +350,8 @@ public class MainActivity extends AppCompatActivity {
     public void callNotification(Receipt receipt) {
 
         //Create const ID for possible multiple notifications
-        int notificationId = 0;
+        int notificationId = new Random().nextInt();
+        Log.d("Database intent id", String.valueOf(notificationId));
 
         //Create Intents for the BroadcastReceiver
         //Decline button intent
@@ -364,8 +369,8 @@ public class MainActivity extends AppCompatActivity {
         acceptIntentBase.putExtra("date", receipt.getDate());
 
         //Create the PendingIntents
-        PendingIntent declineIntent = PendingIntent.getBroadcast(MainActivity.this, 0, declineIntentBase, 0);
-        PendingIntent acceptIntent = PendingIntent.getBroadcast(MainActivity.this, 0, acceptIntentBase, 0);
+        PendingIntent declineIntent = PendingIntent.getBroadcast(MainActivity.this, new Random().nextInt(), declineIntentBase, 0);
+        PendingIntent acceptIntent = PendingIntent.getBroadcast(MainActivity.this, new Random().nextInt(), acceptIntentBase, 0);
 
         //Create the notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext());
