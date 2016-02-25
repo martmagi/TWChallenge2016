@@ -1,6 +1,7 @@
 package pakett.tempname.Adapters;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +35,6 @@ public class ReceiptAdapter extends ArrayAdapter<Receipt> {
     }
 
     public View getView(int position, View convertView, ViewGroup parent) {
-
         View v = convertView;
         Receipt receipt = receipts.get(position);
         if (v == null) {
@@ -52,8 +52,8 @@ public class ReceiptAdapter extends ArrayAdapter<Receipt> {
 
         int i = receipt.getContentList().size()/3*2;
         int b = 1;
-        for (ReceiptContent content:receipt.getContentList()
-             ) {
+        for (ReceiptContent content:receipt.getContentList()) {
+            Log.d("hey", String.valueOf(content));
             LinearLayout contentView = (LinearLayout) inflater.inflate(R.layout.receipt_content_item, null);
             TextView tv = (TextView) contentView.findViewById(R.id.receipt_element_name);
             TextView tv2 = (TextView) contentView.findViewById(R.id.receipt_element_price);

@@ -67,8 +67,8 @@ public class DBHelper extends SQLiteOpenHelper {
             values.put(KEY_SUM, receipt.getPrice());
             values.put(KEY_SORTED, receipt.isUseful());
             values.put(KEY_DATE, String.valueOf(receipt.getDate()));
-
             db.insert(TABLE_RECEIPT, null, values);
+            readFromDB();
             return true;
         } catch (Exception e) {
             e.printStackTrace();
@@ -77,14 +77,16 @@ public class DBHelper extends SQLiteOpenHelper {
 
     }
 
-    public ArrayList readFromDB() {
+    public ArrayList<Receipt> readFromDB() {
         Log.d("Database", "Reading from database");
         SQLiteDatabase db = this.getReadableDatabase();
         String selectQuery = "SELECT  * FROM " + TABLE_RECEIPT;
         ArrayList<Receipt> list = new ArrayList<>();
         Cursor cursor = db.rawQuery(selectQuery, null);
-
-        if (cursor != null)
+        if (cursor == null) {
+            Log.d("Database", "Database is empty");
+            return new ArrayList();
+        } else {
             if (cursor.moveToFirst()) {
                 do {
                     Receipt newReceipt = new Receipt();
@@ -108,12 +110,9 @@ public class DBHelper extends SQLiteOpenHelper {
                     Log.d("Database", "query from database: " + newReceipt);
                 } while (cursor.moveToNext());
             }
-
-
-        if (cursor != null) {
             cursor.close();
+            return list;
         }
-        return list;
     }
 
     public ArrayList readSpecificFromDB(int a) {

@@ -47,7 +47,7 @@ public class MainActivity extends AppCompatActivity {
     GoogleAccountCredential mCredential;
     //ProgressDialog mProgress;
     DBHelper db;
-
+    ReceiptAdapter itemsAdapter;
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
@@ -79,34 +79,40 @@ public class MainActivity extends AppCompatActivity {
         Receipt receipt1 = new Receipt("1", 36, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
         Receipt receipt2 = new Receipt("2", 54, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
         Receipt receipt3 = new Receipt("3", 126, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
-
+        db = new DBHelper(this);
         list.add(receipt1);
         list.add(receipt2);
         list.add(receipt3);
-        ReceiptAdapter itemsAdapter =
-                new ReceiptAdapter(this, 0, list);
+        //db.truncateDB();
+        List<Receipt> newR = db.readFromDB();
+
+        Log.d("Database", String.valueOf(newR));
+        itemsAdapter = new ReceiptAdapter(this, 0, list);
+
         recieptView.setAdapter(itemsAdapter);
+
         Thread thread = new Thread() {
             @Override
             public void run() {
                 forGoogle();
             }
         };
+
         thread.run();
     }
 
     private void forGoogle() {
-        db = new DBHelper(this);
-        db.readFromDB();
+        //db = new DBHelper(this);
+        //db.readFromDB();
         // db.insertIntoDB(new Receipt("Peeter", 900, db.calcDate(0)));
 
         // The number in the argument defines the length of the period in stages
         // 1-current day, 2-last week, 3-last month
 
-        db.readSpecificFromDB(1);
-        db.readSpecificFromDB(2);
-        db.readSpecificFromDB(3);
-        db.closeDB();
+        //db.readSpecificFromDB(1);
+        //db.readSpecificFromDB(2);
+        //db.readSpecificFromDB(3);
+        //db.closeDB();
 
         // Initialize credentials and service object.
         SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
@@ -290,42 +296,48 @@ public class MainActivity extends AppCompatActivity {
          * @throws IOException
          */
         private List<String> getDataFromApi() throws IOException {
+            List<Receipt> newExpenses = new ArrayList<>(); // to store all new expenses
             String user = "me";
+
+            // Create connection to get all message ids
             ListMessagesResponse messages = mService.users().messages().list(user).execute();
-            List<Receipt> found = new ArrayList<>();
+
+            // Creating specific list of metaHeaders so that the result is smaller
             List<String> metaHeaders = new ArrayList<>();
             metaHeaders.add("Return-Path");
             metaHeaders.add("Date");
-            int counter = 0;
+
+            int counter = 0; // for testing
             for (Message message : messages.getMessages()) {
-                List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).execute().getPayload().getHeaders();
-                String content = "";
-                //Log.d("Message", String.valueOf(headers));
-                boolean foundEntry = false;
-                for (MessagePartHeader header : headers) {
-                    if (header.getName().equals("Return-Path") && header.getValue().equals("<automailer@seb.ee>")) {
-                        foundEntry = true;
-                        content = new String(Base64.decodeBase64(mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData()), "UTF-8");
-                    }
-                    if (foundEntry && header.getName().equals("Date")) {
-                        String dateString = header.getValue();
-                        found.add(Receipt.stringToReceipt(content, dateString));
-                        break;
+
+                // Read Date and Return-Path headers for the current message
+                List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).setFormat("metadata").execute().getPayload().getHeaders();
+
+                // If the returned headers lists size is 2, meaning it has both dare and return-path data
+                if (headers.size() == 2 && headers.get(0).getValue().equals("<automailer@seb.ee>")) {
+                    String encryptedContent = mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData();
+                    String decryptedContent = new String(Base64.decodeBase64(encryptedContent), "UTF-8");
+                    Receipt newReceipt = Receipt.stringToReceipt(decryptedContent, headers.get(1).getValue());
+                    if (newReceipt != null) { // If the mail is not for notifying expenses
+                        newExpenses.add(Receipt.stringToReceipt(decryptedContent, headers.get(1).getValue()));
                     }
                 }
-                counter++;
+
+                // For testing, will be replaced with date checking
                 if (counter > 10) {
-                    Log.d("counter", String.valueOf(counter));
                     break;
                 }
+                counter++;
             }
+
+            // Connect to a database
             DBHelper dbHelper = new DBHelper(MainActivity.this);
-            dbHelper.truncateDB();
-            Log.d("Receipt", String.valueOf(found.size()));
-            for (Receipt receipt : found) {
+            //dbHelper.truncateDB(); // Empty the database for testing
+
+            // Call notification for every new expense
+            for (Receipt receipt : newExpenses) {
                 callNotification(receipt);
             }
-            dbHelper.readFromDB();
             return new ArrayList<>();
         }
 
@@ -351,7 +363,6 @@ public class MainActivity extends AppCompatActivity {
 
         //Create const ID for possible multiple notifications
         int notificationId = new Random().nextInt();
-        Log.d("Database intent id", String.valueOf(notificationId));
 
         //Create Intents for the BroadcastReceiver
         //Decline button intent

@@ -1,5 +1,7 @@
 package pakett.tempname;
 
+import android.util.Log;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,6 +19,8 @@ public class Receipt {
     private boolean useful;
     private String companyName;
     private double price;
+    private ArrayList<ReceiptContent> contentList;
+
     private Date date;
 
     public ArrayList<ReceiptContent> getContentList() {
@@ -26,8 +30,6 @@ public class Receipt {
     public void setContentList(ArrayList<ReceiptContent> contentList) {
         this.contentList = contentList;
     }
-
-    private ArrayList<ReceiptContent> contentList;
     public Receipt() {
     }
 
@@ -37,6 +39,9 @@ public class Receipt {
         this.price = price;
         this.date = date;
         this.contentList  = new ArrayList<ReceiptContent>();
+        ReceiptContent receiptContent2 = new ReceiptContent(companyName, Double.toString(price));
+        contentList.add(receiptContent2);
+
         for (int i = 0; i < 6; ++i) {
             ReceiptContent receiptContent = new ReceiptContent("Yummy icecream", "6");
             this.contentList.add(receiptContent);
@@ -79,7 +84,6 @@ public class Receipt {
         this.price = price;
     }
 
-
     public Date getDate() {
         return this.date;
     }
@@ -94,6 +98,13 @@ public class Receipt {
 
     public static Receipt stringToReceipt(String string, String stringDate) {
         String[] lines = string.split("\\r\\n");
+
+        String checkIfCorrectMail = lines[0]; // If the mail is not for notifying expenses
+        if (!checkIfCorrectMail.contains("Teie kontol on toimunud broneering")){
+            Log.d("False message received", lines[0]);
+            return null;
+        }
+
         String paidSumLine = lines[3];
         String[] paidSumLines = paidSumLine.split(" ");
         double paidSum = Double.parseDouble(paidSumLines[1].replace(" EUR", "").replace("-",""));

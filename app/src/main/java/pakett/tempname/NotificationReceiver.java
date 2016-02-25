@@ -15,16 +15,12 @@ import java.util.Date;
 public class NotificationReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.d("Intent", "Intent received");
-
         //Get the extras
         Bundle bundle = intent.getExtras();
         int id = bundle.getInt("notificationId");
         String companyName = bundle.getString("company");
         double price = bundle.getDouble("price");
         Date date = (Date) intent.getSerializableExtra("date");
-
-        Log.d("Database intent id", String.valueOf(id));
 
         //Create the receipt
         Receipt receipt = new Receipt(companyName, price, date);
