@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Random;
 
 import pakett.tempname.Adapters.ReceiptAdapter;
+import pakett.tempname.Models.Receipt;
 
 
 public class MainActivity extends AppCompatActivity {

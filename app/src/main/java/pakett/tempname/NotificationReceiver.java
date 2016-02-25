@@ -5,9 +5,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
 
 import java.util.Date;
+
+import pakett.tempname.Models.Receipt;
 
 /**
  * Created by Risto on 2/22/2016.

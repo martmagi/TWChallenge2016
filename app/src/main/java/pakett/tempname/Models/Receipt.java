@@ -1,4 +1,4 @@
-package pakett.tempname;
+package pakett.tempname.Models;
 
 import android.util.Log;
 
@@ -8,8 +8,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
-
-import pakett.tempname.Models.ReceiptContent;
 
 /**
  * Created by Mart on 20/02/2016.
@@ -30,9 +28,9 @@ public class Receipt {
     public void setContentList(ArrayList<ReceiptContent> contentList) {
         this.contentList = contentList;
     }
+    
     public Receipt() {
     }
-
 
     public Receipt(String companyName, double price, Date date) {
         this.companyName = companyName;

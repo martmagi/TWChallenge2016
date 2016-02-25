@@ -15,6 +15,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Calendar;
 
+import pakett.tempname.Models.Receipt;
+
 /**
  * Created by Karl on 20.02.2016.
  */

@@ -15,7 +15,7 @@ import java.util.Locale;
 
 import pakett.tempname.Models.ReceiptContent;
 import pakett.tempname.R;
-import pakett.tempname.Receipt;
+import pakett.tempname.Models.Receipt;
 
 /**
  * Created by AnnaMC on 20.02.2016.
