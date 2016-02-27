@@ -117,7 +117,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }
     }
 
-    public ArrayList readSpecificFromDB(int a) {
+    public ArrayList<Receipt> readSpecificFromDB(int a) {
         SQLiteDatabase db = this.getReadableDatabase();
         int START_DATE;
         int END_DATE;
@@ -129,6 +129,7 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         String selectQuery = "SELECT  * FROM " + TABLE_RECEIPT + " WHERE " + KEY_DATE + " BETWEEN " + START_DATE + " AND " + END_DATE;
+        System.out.println(selectQuery);
         ArrayList<Receipt> list = new ArrayList<>();
         Cursor cursor = db.rawQuery(selectQuery, null);
 

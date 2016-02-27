@@ -5,15 +5,10 @@
     android:layout_margin="20dp"
     android:background="@drawable/card_bg"
     android:measureWithLargestChild="false"
-    android:layout_marginTop="20dp"
     android:elevation="2dp"
-    android:nestedScrollingEnabled="false">
+    android:nestedScrollingEnabled="false"
+    android:id="@+id/receipt_container">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="20dp"
-        android:background="#c7dcd7"
-        />
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -23,17 +18,18 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="12.02.2016"
-            android:fontFamily="roboto-light"
+            android:fontFamily="sans-serif-light"
             android:id="@+id/receipt_date"
             android:textSize="20sp" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="38.04 €"
+            android:fontFamily="sans-serif-condensed-light"
             android:textColor="#000"
             android:id="@+id/receipt_total"
 
-            android:textSize="30sp"/>
+            android:textSize="40sp"/>
 
     </LinearLayout>
 
@@ -42,14 +38,28 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="15dp"
-        android:background="#eee"
-        android:id="@+id/content_holder"/>
-
+        android:background="#eee">
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="10dp">
+        android:id="@+id/content_holder">
+
+    </LinearLayout>
+        <ImageView
+            android:id="@+id/zigzag_bottom"
+            android:layout_width="match_parent"
+            android:layout_height="7dp"
+            android:adjustViewBounds="true"
+            android:scaleType="fitXY"
+            android:tint="#fafafa"
+            android:src="@drawable/zigzag" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="15dp">
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -60,21 +70,37 @@
             android:id="@+id/good"
             android:layout_weight="1"
             android:text="yo"
-            android:textSize="18sp"/>
+            android:textSize="20sp"
+            android:textColor="#000"
+            android:fontFamily="sans-serif-condensed" />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:id="@+id/bad"
             android:layout_weight="1"
-
+            android:fontFamily="sans-serif-condensed"
             android:textAlignment="textEnd"
+            android:textColor="#000"
             android:layout_gravity="end"
             android:text="yo"
-            android:textSize="18sp"/>
+            android:textSize="20sp"/>
         </LinearLayout>
-        <ImageView
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:src="@drawable/status_bar"/>
+            android:orientation="horizontal">
+            <View
+                android:layout_width="wrap_content"
+                android:layout_weight="3"
+                android:layout_height="5dp"
+                android:background="#3cff00"
+                android:id="@+id/good_line"/>
+            <View
+                android:layout_width="wrap_content"
+                android:layout_weight="6"
+                android:layout_height="5dp"
+                android:background="#ff0008"
+                android:id="@+id/bad_line"/>
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

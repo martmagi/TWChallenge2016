@@ -6,8 +6,18 @@
         <item name="colorPrimary">#1DE9B6</item>
         <item name="colorPrimaryDark">#00BFA5</item>
         <item name="colorAccent">@color/colorAccent</item>
+        <item name="toolbarStyle">@style/Widget.Toolbar</item>
+        <item name="android:textViewStyle">@style/RobotoTextViewStyle</item>
+
     </style>
 
+    <style name="RobotoTextViewStyle" parent="android:Widget.TextView">
+        <item name="android:fontFamily">sans-serif-black</item>
+    </style>
+
+<style name="Widget.Toolbar" parent="@style/Widget.AppCompat.Toolbar">
+<item name="contentInsetStart">0dp</item>
+</style>
     <style name="AppTheme.NoActionBar">
         <item name="windowActionBar">false</item>
     </style>

@@ -118,6 +118,7 @@ public class Receipt {
             companyName += paidToFullExpression[i];
         }
 
+
         return new Receipt(companyName, paidSum, parseDateString(stringDate));
     }
 

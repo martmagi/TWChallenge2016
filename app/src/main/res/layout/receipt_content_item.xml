@@ -12,7 +12,9 @@
             android:text="Some thingie"
             android:textSize="14sp"
             android:layout_weight="1"
-            android:id="@+id/receipt_element_name"/>
+            android:id="@+id/receipt_element_company"
+            android:fontFamily="sans-serif-condensed"
+            />
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -22,6 +24,8 @@
             android:textAlignment="textEnd"
             android:layout_gravity="end"
             android:id="@+id/receipt_element_price"
+            android:fontFamily="sans-serif-condensed"
+
             android:textStyle="bold" />
 
 </LinearLayout>
