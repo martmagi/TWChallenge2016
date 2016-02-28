@@ -14,6 +14,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarActivity;
@@ -25,6 +26,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -65,8 +67,7 @@ import pakett.tempname.Models.Receipt;
 
 public class MainActivity extends AppCompatActivity {
     GoogleAccountCredential mCredential;
-    //ProgressDialog mProgress;
-    DBHelper db;
+
     static final int REQUEST_ACCOUNT_PICKER = 1000;
     static final int REQUEST_AUTHORIZATION = 1001;
     static final int REQUEST_GOOGLE_PLAY_SERVICES = 1002;
@@ -91,69 +92,68 @@ public class MainActivity extends AppCompatActivity {
         activityLayout.setPadding(16, 16, 16, 16);
         setContentView(R.layout.activity_main);
 
-        /*ListView recieptView = (ListView) findViewById(R.id.receipt_list);
+        FloatingActionButton getNewReceipts = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton refreshReceipts = (FloatingActionButton) findViewById(R.id.refresh);
 
-        final ArrayList<Receipt> list = new ArrayList<>();
+        getNewReceipts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Thread thread = new Thread() {
+                    @Override
+                    public void run() {
+                        refreshResults();
+                    }
+                };
+                thread.run();
+            }
+        });
 
-        //Receipt receipt1 = new Receipt("1", 36, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
-       // Receipt receipt2 = new Receipt("2", 54, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
-        //Receipt receipt3 = new Receipt("3", 126, Receipt.parseDateString("Sat, 20 Feb 2016 16:28:28 +0200"));
-        db = new DBHelper(this);
-        //list.add(receipt1);
-        //list.add(receipt2);
-        //list.add(receipt3);
-        //db.truncateDB();
-        //ArrayList<Receipt> newR = db.readFromDB();
-
-        //Log.d("Database", String.valueOf(newR));
-        itemsAdapter = new ReceiptAdapter(this, 0, list);
-
-        recieptView.setAdapter(itemsAdapter);*/
-
+        refreshReceipts.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showReceipts();
+            }
+        });
+        forGoogle();
         setCustomActionBar();
         showReceipts();
-        Thread thread = new Thread() {
-            @Override
-            public void run() {
-                forGoogle();
-            }
-        };
-
-        thread.run();
     }
 
-    private void showReceipts(){
-
+    private void showReceipts() {
+        DBHelper db = new DBHelper(MainActivity.this);
+        //db.truncateDB();
         LinearLayout receiptDay = (LinearLayout) findViewById(R.id.cell1);
         LinearLayout receiptWeek = (LinearLayout) findViewById(R.id.cell2);
         LinearLayout receiptMonth = (LinearLayout) findViewById(R.id.cell3);
 
-        showReceiptContent(receiptDay, 0, getDummys(5));
+
+        showReceiptContent(receiptDay, 0, db.readFromDB());
         showReceiptContent(receiptWeek, 1, getDummys(8));
         showReceiptContent(receiptMonth, 2, getDummys(15));
 
     }
 
-    private ArrayList<Receipt> getDummys(int len){
+    private ArrayList<Receipt> getDummys(int len) {
         ArrayList<Receipt> receipts = new ArrayList<>();
         Random r = new Random();
 
         DecimalFormat df = new DecimalFormat("#.##");
-        for(int i = len; i>0; i--){
-            double randomValue = 2 + (150 - 2) * r.nextDouble();
-            double price = Double.valueOf(df.format(randomValue));
-            Receipt receipt = new Receipt("Comarket",price , new Date());
-            if((i & 1) == 0){
+        for (int i = len; i > 0; i--) {
+            double randomValue = ((int) (2 + (150 - 2) * r.nextDouble() * 100)) / 100.0;
+            double price = Double.valueOf(randomValue);
+
+            Receipt receipt = new Receipt("Comarket", price, new Date());
+            if ((i & 1) == 0) {
                 receipt.setUseful(true);
-            }
-            else{
+            } else {
                 receipt.setUseful(false);
             }
             receipts.add(receipt);
         }
         return receipts;
     }
-    private void showReceiptContent(LinearLayout view, int period, ArrayList<Receipt> receipts){
+
+    private void showReceiptContent(LinearLayout view, int period, ArrayList<Receipt> receipts) {
         System.out.println(receipts.size());
         String date = "";
         double total = 0;
@@ -162,27 +162,24 @@ public class MainActivity extends AppCompatActivity {
         DateFormat dateFormat = new SimpleDateFormat("EEE, MMM dd", getResources().getConfiguration().locale);
 
         long DAY_IN_MS = 1000 * 60 * 60 * 24;
-        if(period == 0){
+        if (period == 0) {
             Date dateNow = new Date();
             date = dateFormat.format(dateNow); //2014/08/06 15:59:48
-        }
-        else if(period == 1){
+        } else if (period == 1) {
             String end = dateFormat.format(new Date(System.currentTimeMillis() - (DAY_IN_MS)));
             String start = dateFormat.format(new Date(System.currentTimeMillis() - (8 * DAY_IN_MS)));
             date = start + " - " + end;
-        }
-        else if(period == 2){
+        } else if (period == 2) {
             String end = dateFormat.format(new Date(System.currentTimeMillis() - (DAY_IN_MS)));
             String start = dateFormat.format(new Date(System.currentTimeMillis() - (30 * DAY_IN_MS)));
             date = start + " - " + end;
         }
 
-        for(Receipt receipt: receipts){
+        for (Receipt receipt : receipts) {
             total += receipt.getPrice();
-            if(receipt.isUseful()){
+            if (receipt.isUseful()) {
                 good += receipt.getPrice();
-            }
-            else{
+            } else {
                 bad += receipt.getPrice();
             }
         }
@@ -194,8 +191,8 @@ public class MainActivity extends AppCompatActivity {
         TextView receiptTotal = (TextView) view.findViewById(R.id.receipt_total);
         receiptTotal.setText(df.format(total) + " €");
 
-TextView receiptGood = (TextView) view.findViewById(R.id.good);
-TextView receiptBad = (TextView) view.findViewById(R.id.bad);
+        TextView receiptGood = (TextView) view.findViewById(R.id.good);
+        TextView receiptBad = (TextView) view.findViewById(R.id.bad);
 
         receiptBad.setText(df.format(bad) + " €");
         receiptGood.setText(df.format(good) + " €");
@@ -214,16 +211,15 @@ TextView receiptBad = (TextView) view.findViewById(R.id.bad);
         goodLine.setLayoutParams(paramGood);
         badLine.setLayoutParams(paramBad);
         populateList((LinearLayout) view.findViewById(R.id.content_holder), receipts);
-
     }
 
-    private void populateList(LinearLayout view, ArrayList<Receipt> receipts){
+    private void populateList(LinearLayout view, ArrayList<Receipt> receipts) {
         LayoutInflater inflater = LayoutInflater.from(this);
         boolean allUseful = true;
         int color = 0;
-        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             color = getColor(R.color.inactive);
-        } else{
+        } else {
             color = getResources().getColor(R.color.inactive);
         }
 
@@ -235,52 +231,40 @@ TextView receiptBad = (TextView) view.findViewById(R.id.bad);
                 return a2.compareTo(a1);
             }
         });
-
-        for(Receipt receipt : receipts){
+        view.removeAllViewsInLayout();
+        for (Receipt receipt : receipts) {
             LinearLayout contentView = (LinearLayout) inflater.inflate(R.layout.receipt_content_item, null);
             TextView tv = (TextView) contentView.findViewById(R.id.receipt_element_company);
             TextView tv2 = (TextView) contentView.findViewById(R.id.receipt_element_price);
             tv.setText(receipt.getCompanyName());
             tv2.setText(receipt.getPrice() + " €");
-            if(!receipt.isUseful()){
+            if (!receipt.isUseful()) {
                 contentView.setBackgroundColor(color);
                 allUseful = false;
             }
             view.addView(contentView);
         }
-        if(allUseful){
-            ((ImageView) findViewById(R.id.zigzag_bottom)).setColorFilter(Color.argb(255, 255, 255, 255));
+        if (allUseful) {
+            //((ImageView) findViewById(R.id.zigzag_bottom)).setColorFilter(Color.argb(255, 255, 255, 255));
         }
     }
 
-    private void setCustomActionBar(){
-        if(getSupportActionBar() != null){
+    private void setCustomActionBar() {
+        if (getSupportActionBar() != null) {
             ActionBar actionBar = getSupportActionBar();
             actionBar.setDisplayShowHomeEnabled(false);
             actionBar.setDisplayShowCustomEnabled(true);
             actionBar.setDisplayShowTitleEnabled(false);
             View customView = getLayoutInflater().inflate(R.layout.custom_actionbar, null);
             actionBar.setCustomView(customView);
-            Toolbar parent =(Toolbar) customView.getParent();
+            Toolbar parent = (Toolbar) customView.getParent();
             parent.setContentInsetsAbsolute(0, 0);
             getSupportActionBar().setIcon(R.mipmap.ic_launcher);
 
         }
     }
-    private void forGoogle(){
-        //LinearLayout activityLayout = new LinearLayout(this);
-        //LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-        //        LinearLayout.LayoutParams.MATCH_PARENT,
-        //        LinearLayout.LayoutParams.MATCH_PARENT);
-        //activityLayout.setLayoutParams(lp);
-        //activityLayout.setOrientation(LinearLayout.VERTICAL);
-        //activityLayout.setPadding(16, 16, 16, 16);
 
-        //db.readSpecificFromDB(1);
-        //db.readSpecificFromDB(2);
-        //db.readSpecificFromDB(3);
-        //db.closeDB();
-
+    private void forGoogle() {
         // Initialize credentials and service object.
         SharedPreferences settings = getPreferences(Context.MODE_PRIVATE);
         mCredential = GoogleAccountCredential.usingOAuth2(
@@ -296,10 +280,9 @@ TextView receiptBad = (TextView) view.findViewById(R.id.bad);
     @Override
     protected void onResume() {
         super.onResume();
-        if (isGooglePlayServicesAvailable()) {
-            refreshResults();
-        }
+        showReceipts();
     }
+
 
     /**
      * Called when an activity launched here (specifically, AccountPicker
@@ -355,7 +338,6 @@ TextView receiptBad = (TextView) view.findViewById(R.id.bad);
      * user can pick an account.
      */
     private void refreshResults() {
-        System.out.println("here1");
         if (mCredential.getSelectedAccountName() == null) {
             chooseAccount();
         } else {
@@ -433,8 +415,6 @@ TextView receiptBad = (TextView) view.findViewById(R.id.bad);
         private Exception mLastError = null;
 
         public MakeRequestTask(GoogleAccountCredential credential) {
-            System.out.println("here2");
-
             HttpTransport transport = AndroidHttp.newCompatibleTransport();
             JsonFactory jsonFactory = JacksonFactory.getDefaultInstance();
             mService = new com.google.api.services.gmail.Gmail.Builder(
@@ -451,12 +431,11 @@ TextView receiptBad = (TextView) view.findViewById(R.id.bad);
         @Override
         protected List<String> doInBackground(Void... params) {
             try {
-                return getDataFromApi();
-            } catch (Exception e) {
-                mLastError = e;
-                cancel(true);
-                return null;
+                getDataFromApi();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            return null;
         }
 
         /**
@@ -465,7 +444,7 @@ TextView receiptBad = (TextView) view.findViewById(R.id.bad);
          * @return List of Strings labels.
          * @throws IOException
          */
-        private List<String> getDataFromApi() throws IOException {
+        private void getDataFromApi() throws IOException {
             List<Receipt> newExpenses = new ArrayList<>(); // to store all new expenses
             String user = "me";
 
@@ -484,18 +463,12 @@ TextView receiptBad = (TextView) view.findViewById(R.id.bad);
                 List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).setFormat("metadata").execute().getPayload().getHeaders();
 
                 // If the returned headers lists size is 2, meaning it has both dare and return-path data
-                if (headers.size() >= 2 && headers.get(0).getValue().equals("<mart.magi@outlook.com>")) {
+                if (headers.size() == 2 && headers.get(0).getValue().equals("<automailer@seb.ee>")) {
                     String encryptedContent = mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData();
                     String decryptedContent = new String(Base64.decodeBase64(encryptedContent), "UTF-8");
-                    String date = "";
-                    for(MessagePartHeader header : headers){
-                        if("Date".equals(header.getName())){
-                            date = header.getValue();
-                        }
-                    }
-                    Receipt newReceipt = Receipt.stringToReceipt(decryptedContent, date);
+                    Receipt newReceipt = Receipt.stringToReceipt(decryptedContent, headers.get(1).getValue());
                     if (newReceipt != null) { // If the mail is not for notifying expenses
-                        newExpenses.add(newReceipt);
+                        newExpenses.add(Receipt.stringToReceipt(decryptedContent, headers.get(1).getValue()));
                     }
                 }
 
@@ -506,15 +479,10 @@ TextView receiptBad = (TextView) view.findViewById(R.id.bad);
                 counter++;
             }
 
-            // Connect to a database
-            DBHelper dbHelper = new DBHelper(MainActivity.this);
-            //dbHelper.truncateDB(); // Empty the database for testing
-
             // Call notification for every new expense
             for (Receipt receipt : newExpenses) {
                 callNotification(receipt);
             }
-            return new ArrayList<>();
         }
 
         @Override

@@ -67,7 +67,7 @@ public class DBHelper extends SQLiteOpenHelper {
             ContentValues values = new ContentValues();
             values.put(KEY_COMP, receipt.getCompanyName());
             values.put(KEY_SUM, receipt.getPrice());
-            values.put(KEY_SORTED, receipt.isUseful());
+            values.put(KEY_SORTED, receipt.isUseful() ? 1 : 0);
             values.put(KEY_DATE, String.valueOf(receipt.getDate()));
             db.insert(TABLE_RECEIPT, null, values);
             readFromDB();
@@ -102,8 +102,7 @@ public class DBHelper extends SQLiteOpenHelper {
                     } catch (ParseException e) {
                         e.printStackTrace();
                     }
-
-                    if (cursor.getString(cursor.getColumnIndex(KEY_SORTED)).equals("False")) {
+                    if (cursor.getInt(cursor.getColumnIndex(KEY_SORTED)) == 0) {
                         newReceipt.setUseful(false);
                     } else {
                         newReceipt.setUseful(true);

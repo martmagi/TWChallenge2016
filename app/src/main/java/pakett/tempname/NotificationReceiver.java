@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import java.util.Date;
 
@@ -29,8 +30,10 @@ public class NotificationReceiver extends BroadcastReceiver {
         //Set the receipt's usefulness according to notification's button pressed
         if (intent.getAction().equals("pakett.tempname.decline")) {
             receipt.setUseful(false);
+            Log.d("Decline","Decline event");
         } else if (intent.getAction().equals("pakett.tempname.accept")) {
             receipt.setUseful(true);
+            Log.d("Decline", "Accept event");
         }
 
         //Insert the receipt into DB
