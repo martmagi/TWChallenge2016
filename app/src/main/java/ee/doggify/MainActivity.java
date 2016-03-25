@@ -8,6 +8,8 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -18,6 +20,7 @@ import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.DisplayMetrics;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -63,6 +66,10 @@ public class MainActivity extends AppCompatActivity {
     private static final String PREF_ACCOUNT_NAME = "";
     private static final String[] SCOPES = {GmailScopes.GMAIL_LABELS, GmailScopes.GMAIL_READONLY, GmailScopes.MAIL_GOOGLE_COM};
 
+    static private Bitmap happy_doge;
+    static private Bitmap meh_doge;
+    static private Bitmap sad_doge;
+
     /**
      * Create the main activity.
      *
@@ -94,6 +101,21 @@ public class MainActivity extends AppCompatActivity {
                 thread.run();
             }
         });
+
+        DisplayMetrics metrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+        int scale = (int) (90 * metrics.scaledDensity);
+
+        happy_doge = Bitmap.createScaledBitmap(
+                BitmapFactory.decodeResource(getResources(), R.drawable.happy_doge),
+                scale, scale, true);
+        meh_doge = Bitmap.createScaledBitmap(
+                BitmapFactory.decodeResource(getResources(), R.drawable.meh_doge),
+                scale, scale, true);
+        sad_doge = Bitmap.createScaledBitmap(
+                BitmapFactory.decodeResource(getResources(), R.drawable.sad_doge),
+                scale, scale, true);
 
         forGoogle();
         //setCustomActionBar();
@@ -133,7 +155,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showReceiptContent(LinearLayout view, int period, ArrayList<Receipt> receipts) {
-        System.out.println(receipts.size());
         String date = "";
         double total = 0;
         double good = 0;
@@ -184,12 +205,12 @@ public class MainActivity extends AppCompatActivity {
         double ratio = bad / good;
         if (ratio < 1.2) {
             if (ratio > 0.5) {
-                doge.setImageResource(R.drawable.meh_doge);
+                doge.setImageBitmap(meh_doge);
             } else {
-                doge.setImageResource(R.drawable.happy_doge);
+                doge.setImageBitmap(happy_doge);
             }
         } else {
-            doge.setImageResource(R.drawable.sad_doge);
+            doge.setImageBitmap(sad_doge);
         }
 
         LinearLayout.LayoutParams paramGood = new LinearLayout.LayoutParams(
