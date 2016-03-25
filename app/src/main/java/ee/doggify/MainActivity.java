@@ -22,6 +22,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
@@ -106,10 +107,11 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout receiptWeek = (LinearLayout) findViewById(R.id.cell2);
         LinearLayout receiptMonth = (LinearLayout) findViewById(R.id.cell3);
 
-
-        showReceiptContent(receiptDay, 0, db.readFromDB());
-        showReceiptContent(receiptWeek, 1, getDummys(5));
-        showReceiptContent(receiptMonth, 2, getDummys(12));
+        //showReceiptContent(receiptDay, 0, db.readFromDB());
+        Random r = new Random();
+        showReceiptContent(receiptDay, 0, getDummys(1 + r.nextInt(5)));
+        showReceiptContent(receiptWeek, 1, getDummys(1 + r.nextInt(7)));
+        showReceiptContent(receiptMonth, 2, getDummys(1 + r.nextInt(12)));
 
     }
 
@@ -118,17 +120,13 @@ public class MainActivity extends AppCompatActivity {
         Random r = new Random();
 
         DecimalFormat df = new DecimalFormat("#.##");
-        String[] s = {"U wot m8", "Comarket", "A&O", "Rimi", "Alko1000", "AS Tiit ja Teet ehitus"};
+        String[] s = {"U wot m8", "Comarket", "A&O", "Rimi", "Alko1000", "AS Tiit ja Teet ehitus", "OÜ Xyz Reg. Kood. 420123042924", "Shooters Tartu", "Fasters Barclay"};
         for (int i = len; i > 0; i--) {
-            double randomValue = ((int) (50 * r.nextDouble() * 100)) / 100.0;
+            double randomValue = ((int) (30 * r.nextDouble() * 100)) / 100.0;
             double price = Double.valueOf(randomValue);
 
             Receipt receipt = new Receipt(s[r.nextInt(s.length)], price, new Date());
-            if ((i & 1) == 0) {
-                receipt.setUseful(true);
-            } else {
-                receipt.setUseful(false);
-            }
+            receipt.setUseful(r.nextBoolean());
             receipts.add(receipt);
         }
         return receipts;
@@ -140,7 +138,7 @@ public class MainActivity extends AppCompatActivity {
         double total = 0;
         double good = 0;
         double bad = 0;
-        DateFormat dateFormat = new SimpleDateFormat("EEE, MMM dd", getResources().getConfiguration().locale);
+        DateFormat dateFormat = new SimpleDateFormat("EEE dd. MMM", getResources().getConfiguration().locale);
 
         long DAY_IN_MS = 1000 * 60 * 60 * 24;
         if (period == 0) {
@@ -157,30 +155,42 @@ public class MainActivity extends AppCompatActivity {
         }
 
         for (Receipt receipt : receipts) {
-            total += receipt.getPrice();
             if (receipt.isUseful()) {
                 good += receipt.getPrice();
             } else {
                 bad += receipt.getPrice();
             }
         }
+        total = good + bad;
+
         TextView receiptDate = (TextView) view.findViewById(R.id.receipt_date);
         receiptDate.setText(date);
 
         DecimalFormat df = new DecimalFormat("#.##");
 
         TextView receiptTotal = (TextView) view.findViewById(R.id.receipt_total);
-        receiptTotal.setText(df.format(total) + " €");
+        receiptTotal.setText(df.format(total) + "€");
 
         TextView receiptGood = (TextView) view.findViewById(R.id.good);
         TextView receiptBad = (TextView) view.findViewById(R.id.bad);
 
-        receiptBad.setText(df.format(bad) + " €");
-        receiptGood.setText(df.format(good) + " €");
-
+        receiptBad.setText(df.format(bad) + "€");
+        receiptGood.setText(df.format(good) + "€");
 
         View goodLine = view.findViewById(R.id.good_line);
         View badLine = view.findViewById(R.id.bad_line);
+
+        ImageView doge = (ImageView) view.findViewById(R.id.doge);
+        double ratio = bad / good;
+        if (ratio < 1.2) {
+            if (ratio > 0.5) {
+                doge.setImageResource(R.drawable.meh_doge);
+            } else {
+                doge.setImageResource(R.drawable.happy_doge);
+            }
+        } else {
+            doge.setImageResource(R.drawable.sad_doge);
+        }
 
         LinearLayout.LayoutParams paramGood = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
@@ -196,7 +206,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void populateList(LinearLayout view, ArrayList<Receipt> receipts) {
         LayoutInflater inflater = LayoutInflater.from(this);
-        boolean allUseful = true;
         int color;
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             color = getColor(R.color.bad);
@@ -218,15 +227,11 @@ public class MainActivity extends AppCompatActivity {
             TextView tv = (TextView) contentView.findViewById(R.id.receipt_element_company);
             TextView tv2 = (TextView) contentView.findViewById(R.id.receipt_element_price);
             tv.setText(receipt.getCompanyName());
-            tv2.setText(receipt.getPrice() + " €");
+            tv2.setText(receipt.getPrice() + "€");
             if (!receipt.isUseful()) {
                 contentView.setBackgroundColor(color);
-                allUseful = false;
             }
             view.addView(contentView);
-        }
-        if (allUseful) {
-            //((ImageView) findViewById(R.id.zigzag_bottom)).setColorFilter(Color.argb(255, 255, 255, 255));
         }
     }
 
@@ -264,6 +269,11 @@ public class MainActivity extends AppCompatActivity {
         showReceipts();
     }
 
+    @Override
+    public void onBackPressed() {
+        //super.onBackPressed();
+        showReceipts();
+    }
 
     /**
      * Called when an activity launched here (specifically, AccountPicker

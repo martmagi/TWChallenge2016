@@ -18,24 +18,40 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingBottom="2dp">
+                android:paddingBottom="2dp" android:weightSum="1">
 
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="12.02.2016"
-                    android:fontFamily="sans-serif-light"
-                    android:id="@+id/receipt_date"
-                    android:textSize="14sp" android:gravity="right"/>
-            <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="38.04 €"
-                    android:fontFamily="sans-serif-thin"
-                    android:textColor="#000"
-                    android:id="@+id/receipt_total"
+            <LinearLayout
+                    android:orientation="horizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:weightSum="1">
+                <LinearLayout
+                        android:orientation="vertical"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" android:layout_weight="1">
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="12.02.2016"
+                            android:fontFamily="sans-serif-light"
+                            android:id="@+id/receipt_date"
+                            android:textSize="14sp" android:gravity="right"/>
+                    <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="38.04 €"
+                            android:fontFamily="sans-serif-thin"
+                            android:textColor="#000"
+                            android:id="@+id/receipt_total"
 
-                    android:textSize="56sp" android:focusableInTouchMode="true"/>
+                            android:textSize="56sp" android:focusableInTouchMode="false"/>
+                </LinearLayout>
+                <ImageView
+                        android:layout_width="90dp"
+                        android:layout_height="fill_parent"
+                        android:id="@+id/doge"
+                        android:layout_weight="1" android:contentDescription="Happy Doge"
+                        android:src="@drawable/happy_doge" android:alpha="0.7"/>
+            </LinearLayout>
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
@@ -45,7 +61,7 @@
                 android:layout_width="wrap_content"
                 android:layout_weight="3"
                 android:layout_height="3dp"
-                android:background="#12ee42"
+                android:background="#31d06c"
                 android:id="@+id/good_line"/>
             <Space
                     android:layout_width="3dp"
@@ -55,7 +71,7 @@
                 android:layout_width="wrap_content"
                 android:layout_weight="6"
                 android:layout_height="3dp"
-                android:background="#ff2f36"
+                android:background="#f83c3c"
                 android:id="@+id/bad_line"/>
         </LinearLayout>
         <LinearLayout
@@ -68,20 +84,20 @@
                 android:id="@+id/good"
                 android:layout_weight="1"
                 android:text="yo"
-                android:textSize="20sp"
-                android:textColor="#616161"
-                android:fontFamily="sans-serif-condensed"/>
+                android:textSize="16dp"
+                android:textColor="#838383"
+                android:fontFamily="sans-serif-light"/>
         <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:id="@+id/bad"
                 android:layout_weight="1"
-                android:fontFamily="sans-serif-condensed"
+                android:fontFamily="sans-serif-light"
                 android:textAlignment="textEnd"
-                android:textColor="#616161"
+                android:textColor="#838383"
                 android:layout_gravity="end"
                 android:text="yo"
-                android:textSize="20sp"/>
+                android:textSize="16dp"/>
         </LinearLayout>
     </LinearLayout>
     <LinearLayout
