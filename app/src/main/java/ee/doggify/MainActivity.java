@@ -536,14 +536,14 @@ public class MainActivity extends AppCompatActivity {
 
         //Create Intents for the BroadcastReceiver
         //Decline button intent
-        Intent declineIntentBase = new Intent("pakett.tempname.decline");
+        Intent declineIntentBase = new Intent("ee.doggify.decline");
         declineIntentBase.putExtra("notificationId", notificationId);
         declineIntentBase.putExtra("company", receipt.getCompanyName());
         declineIntentBase.putExtra("price", receipt.getPrice());
         declineIntentBase.putExtra("date", receipt.getDate());
 
         //Accept button intent
-        Intent acceptIntentBase = new Intent("pakett.tempname.accept");
+        Intent acceptIntentBase = new Intent("ee.doggify.accept");
         acceptIntentBase.putExtra("notificationId", notificationId);
         acceptIntentBase.putExtra("company", receipt.getCompanyName());
         acceptIntentBase.putExtra("price", receipt.getPrice());
