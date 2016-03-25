@@ -12,13 +12,13 @@
     <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical" android:padding="8dp">
+            android:orientation="vertical">
         <include android:id="@+id/cell1" layout="@layout/receipt_item" android:layout_width="fill_parent"
-                 android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+                 android:layout_height="wrap_content" android:layout_margin="8dp"/>
         <include android:id="@+id/cell2" layout="@layout/receipt_item" android:layout_width="fill_parent"
-                 android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+                 android:layout_height="wrap_content" android:layout_margin="8dp"/>
         <include android:id="@+id/cell3" layout="@layout/receipt_item" android:layout_height="wrap_content"
-                 android:layout_width="fill_parent" android:layout_marginBottom="8dp"/>
+                 android:layout_width="fill_parent" android:layout_margin="8dp"/>
     </LinearLayout>
 
 </ScrollView>

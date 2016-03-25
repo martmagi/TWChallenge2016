@@ -184,10 +184,10 @@ public class MainActivity extends AppCompatActivity {
 
         LinearLayout.LayoutParams paramGood = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                4, (float) bad);
+                8, (float) bad);
         LinearLayout.LayoutParams paramBad = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                4, (float) good);
+                8, (float) good);
 
         goodLine.setLayoutParams(paramGood);
         badLine.setLayoutParams(paramBad);
