@@ -1,4 +1,4 @@
-package pakett.tempname;
+package ee.doggify;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -15,7 +15,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Calendar;
 
-import pakett.tempname.Models.Receipt;
+import ee.doggify.Models.Receipt;
 
 /**
  * Created by Karl on 20.02.2016.

@@ -1,4 +1,4 @@
-package pakett.tempname;
+package ee.doggify;
 
 import org.junit.Test;
 

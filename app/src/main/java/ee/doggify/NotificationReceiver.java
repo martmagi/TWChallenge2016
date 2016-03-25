@@ -1,4 +1,4 @@
-package pakett.tempname;
+package ee.doggify;
 
 import android.app.NotificationManager;
 import android.content.BroadcastReceiver;
@@ -9,7 +9,7 @@ import android.util.Log;
 
 import java.util.Date;
 
-import pakett.tempname.Models.Receipt;
+import ee.doggify.Models.Receipt;
 
 /**
  * Created by Risto on 2/22/2016.
@@ -28,10 +28,10 @@ public class NotificationReceiver extends BroadcastReceiver {
         Receipt receipt = new Receipt(companyName, price, date);
 
         //Set the receipt's usefulness according to notification's button pressed
-        if (intent.getAction().equals("pakett.tempname.decline")) {
+        if (intent.getAction().equals("ee.doggify.decline")) {
             receipt.setUseful(false);
             Log.d("Decline","Decline event");
-        } else if (intent.getAction().equals("pakett.tempname.accept")) {
+        } else if (intent.getAction().equals("ee.doggify.accept")) {
             receipt.setUseful(true);
             Log.d("Decline", "Accept event");
         }

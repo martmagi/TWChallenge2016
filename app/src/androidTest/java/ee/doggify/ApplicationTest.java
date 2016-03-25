@@ -1,4 +1,4 @@
-package pakett.tempname;
+package ee.doggify;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

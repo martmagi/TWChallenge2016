@@ -1,4 +1,4 @@
-package pakett.tempname.Models;
+package ee.doggify.Models;
 
 import android.util.Log;
 

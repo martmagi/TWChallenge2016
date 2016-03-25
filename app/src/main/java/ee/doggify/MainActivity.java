@@ -1,4 +1,4 @@
-package pakett.tempname;
+package ee.doggify;
 
 import android.accounts.AccountManager;
 import android.app.Dialog;
@@ -8,7 +8,6 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -17,19 +16,13 @@ import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.ActionBar;
-import android.support.v7.app.ActionBarActivity;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.test.RenamingDelegatingContext;
-import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.android.gms.common.ConnectionResult;
@@ -41,12 +34,9 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
-import com.google.api.client.util.Base64;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.ListMessagesResponse;
-import com.google.api.services.gmail.model.Message;
-import com.google.api.services.gmail.model.MessagePartHeader;
 
 import java.io.IOException;
 import java.text.DateFormat;
@@ -59,10 +49,8 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
-import java.util.zip.Inflater;
 
-import pakett.tempname.Adapters.ReceiptAdapter;
-import pakett.tempname.Models.Receipt;
+import ee.doggify.Models.Receipt;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -449,7 +437,22 @@ public class MainActivity extends AppCompatActivity {
             String user = "me";
 
             // Create connection to get all message ids
-            ListMessagesResponse messages = mService.users().messages().list(user).execute();
+            ListMessagesResponse messages = null;
+            try {
+                messages = mService.users().messages().list(user).execute();
+            } catch (IOException e) {
+                if (e instanceof GooglePlayServicesAvailabilityIOException) {
+                    showGooglePlayServicesAvailabilityErrorDialog(
+                            ((GooglePlayServicesAvailabilityIOException) e)
+                                    .getConnectionStatusCode());
+                } else if (e instanceof UserRecoverableAuthIOException) {
+                    startActivityForResult(
+                            ((UserRecoverableAuthIOException) e).getIntent(),
+                            MainActivity.REQUEST_AUTHORIZATION);
+                } else {
+                    e.printStackTrace();
+                }
+            }
 
             // Creating specific list of metaHeaders so that the result is smaller
             List<String> metaHeaders = new ArrayList<>();
@@ -457,7 +460,7 @@ public class MainActivity extends AppCompatActivity {
             metaHeaders.add("Date");
 
             int counter = 0; // for testing
-            for (Message message : messages.getMessages()) {
+            /*for (Message message : messages.getMessages()) {
 
                 // Read Date and Return-Path headers for the current message
                 List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).setFormat("metadata").execute().getPayload().getHeaders();
@@ -477,8 +480,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 counter++;
-            }
-
+            }*/
             // Call notification for every new expense
             for (Receipt receipt : newExpenses) {
                 callNotification(receipt);

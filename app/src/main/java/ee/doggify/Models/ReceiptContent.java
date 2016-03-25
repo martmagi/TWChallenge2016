@@ -1,4 +1,4 @@
-package pakett.tempname.Models;
+package ee.doggify.Models;
 
 /**
  * Created by AnnaMC on 20.02.2016.

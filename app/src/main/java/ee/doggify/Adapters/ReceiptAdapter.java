@@ -1,22 +1,15 @@
-package pakett.tempname.Adapters;
+package ee.doggify.Adapters;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Locale;
 
-import pakett.tempname.Models.ReceiptContent;
-import pakett.tempname.R;
-import pakett.tempname.Models.Receipt;
+import ee.doggify.R;
+import ee.doggify.Models.Receipt;
 
 /**
  * Created by AnnaMC on 20.02.2016.

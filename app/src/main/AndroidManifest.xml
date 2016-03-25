@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="pakett.tempname">
+    package="ee.doggify">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -15,7 +15,7 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".MainActivity"
+            android:name="ee.doggify.MainActivity"
             android:icon="@mipmap/ic_launcher"
             android:label="@string/app_name"
             android:theme="@style/AppTheme">
@@ -30,10 +30,10 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <receiver android:name=".NotificationReceiver" >
+        <receiver android:name="ee.doggify.NotificationReceiver" >
             <intent-filter>
-                <action android:name="pakett.tempname.decline" />
-                <action android:name="pakett.tempname.accept" />
+                <action android:name="ee.doggify.decline" />
+                <action android:name="ee.doggify.accept" />
             </intent-filter>
         </receiver>
 
