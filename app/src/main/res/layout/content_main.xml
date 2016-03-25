@@ -7,15 +7,18 @@
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context=".MainActivity"
     tools:showIn="@layout/activity_main"
-    android:background="#c7dcd7">
+    android:background="#eeeeee">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-        <include android:id="@+id/cell1" layout="@layout/receipt_item" />
-        <include android:id="@+id/cell2" layout="@layout/receipt_item" />
-        <include android:id="@+id/cell3" layout="@layout/receipt_item" />
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" android:padding="8dp">
+        <include android:id="@+id/cell1" layout="@layout/receipt_item" android:layout_width="fill_parent"
+                 android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <include android:id="@+id/cell2" layout="@layout/receipt_item" android:layout_width="fill_parent"
+                 android:layout_height="wrap_content" android:layout_marginBottom="8dp"/>
+        <include android:id="@+id/cell3" layout="@layout/receipt_item" android:layout_height="wrap_content"
+                 android:layout_width="fill_parent" android:layout_marginBottom="8dp"/>
     </LinearLayout>
 
 </ScrollView>

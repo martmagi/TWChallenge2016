@@ -77,11 +77,9 @@ public class MainActivity extends AppCompatActivity {
                 LinearLayout.LayoutParams.MATCH_PARENT);
         activityLayout.setLayoutParams(lp);
         activityLayout.setOrientation(LinearLayout.VERTICAL);
-        activityLayout.setPadding(16, 16, 16, 16);
         setContentView(R.layout.activity_main);
 
         FloatingActionButton getNewReceipts = (FloatingActionButton) findViewById(R.id.fab);
-        FloatingActionButton refreshReceipts = (FloatingActionButton) findViewById(R.id.refresh);
 
         getNewReceipts.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -96,14 +94,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        refreshReceipts.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showReceipts();
-            }
-        });
         forGoogle();
-        setCustomActionBar();
+        //setCustomActionBar();
         showReceipts();
     }
 
@@ -116,8 +108,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         showReceiptContent(receiptDay, 0, db.readFromDB());
-        showReceiptContent(receiptWeek, 1, getDummys(8));
-        showReceiptContent(receiptMonth, 2, getDummys(15));
+        showReceiptContent(receiptWeek, 1, getDummys(5));
+        showReceiptContent(receiptMonth, 2, getDummys(12));
 
     }
 
@@ -126,11 +118,12 @@ public class MainActivity extends AppCompatActivity {
         Random r = new Random();
 
         DecimalFormat df = new DecimalFormat("#.##");
+        String[] s = {"U wot m8", "Comarket", "A&O", "Rimi", "Alko1000", "AS Tiit ja Teet ehitus"};
         for (int i = len; i > 0; i--) {
-            double randomValue = ((int) (2 + (150 - 2) * r.nextDouble() * 100)) / 100.0;
+            double randomValue = ((int) (50 * r.nextDouble() * 100)) / 100.0;
             double price = Double.valueOf(randomValue);
 
-            Receipt receipt = new Receipt("U wot m8", price, new Date());
+            Receipt receipt = new Receipt(s[r.nextInt(s.length)], price, new Date());
             if ((i & 1) == 0) {
                 receipt.setUseful(true);
             } else {
@@ -186,15 +179,15 @@ public class MainActivity extends AppCompatActivity {
         receiptGood.setText(df.format(good) + " €");
 
 
-        View goodLine = (View) view.findViewById(R.id.good_line);
-        View badLine = (View) view.findViewById(R.id.bad_line);
+        View goodLine = view.findViewById(R.id.good_line);
+        View badLine = view.findViewById(R.id.bad_line);
 
         LinearLayout.LayoutParams paramGood = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                15, (float) bad);
+                4, (float) bad);
         LinearLayout.LayoutParams paramBad = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                15, (float) good);
+                4, (float) good);
 
         goodLine.setLayoutParams(paramGood);
         badLine.setLayoutParams(paramBad);
@@ -204,11 +197,11 @@ public class MainActivity extends AppCompatActivity {
     private void populateList(LinearLayout view, ArrayList<Receipt> receipts) {
         LayoutInflater inflater = LayoutInflater.from(this);
         boolean allUseful = true;
-        int color = 0;
+        int color;
         if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            color = getColor(R.color.inactive);
+            color = getColor(R.color.bad);
         } else {
-            color = getResources().getColor(R.color.inactive);
+            color = getResources().getColor(R.color.bad);
         }
 
         Collections.sort(receipts, new Comparator<Receipt>() {
@@ -216,7 +209,7 @@ public class MainActivity extends AppCompatActivity {
             public int compare(Receipt abc1, Receipt abc2) {
                 Boolean a1 = abc1.isUseful();
                 Boolean a2 = abc2.isUseful();
-                return a2.compareTo(a1);
+                return a1.compareTo(a2);
             }
         });
         view.removeAllViewsInLayout();

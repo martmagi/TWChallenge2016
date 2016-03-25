@@ -1,99 +1,106 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_margin="20dp"
-    android:background="@drawable/card_bg"
-    android:measureWithLargestChild="false"
-    android:elevation="2dp"
-    android:nestedScrollingEnabled="false"
-    android:id="@+id/receipt_container">
+              android:orientation="vertical" android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_margin="20dp"
+              android:background="@drawable/card_bg"
+              android:measureWithLargestChild="false"
+              android:elevation="2dp"
+              android:nestedScrollingEnabled="false"
+              android:id="@+id/receipt_container" android:paddingBottom="8dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="10dp">
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="12.02.2016"
-            android:fontFamily="sans-serif-light"
-            android:id="@+id/receipt_date"
-            android:textSize="20sp" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="38.04 €"
-            android:fontFamily="sans-serif-condensed-light"
-            android:textColor="#000"
-            android:id="@+id/receipt_total"
-
-            android:textSize="40sp"/>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="15dp"
-        android:background="#eee">
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:id="@+id/content_holder">
-
-    </LinearLayout>
-
-    </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="15dp">
+        android:padding="16dp">
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:orientation="horizontal">
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="8dp">
+
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="12.02.2016"
+                    android:fontFamily="sans-serif-light"
+                    android:id="@+id/receipt_date"
+                    android:textSize="14sp" android:gravity="right"/>
+            <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="38.04 €"
+                    android:fontFamily="sans-serif-thin"
+                    android:textColor="#000"
+                    android:id="@+id/receipt_total"
+
+                    android:textSize="56sp" android:focusableInTouchMode="true"/>
+        </LinearLayout>
+        <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal" android:paddingBottom="4dp">
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/good"
-            android:layout_weight="1"
-            android:text="yo"
-            android:textSize="20sp"
-            android:textColor="#000"
-            android:fontFamily="sans-serif-condensed" />
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/good"
+                android:layout_weight="1"
+                android:text="yo"
+                android:textSize="20sp"
+                android:textColor="#616161"
+                android:fontFamily="sans-serif-condensed"/>
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/bad"
-            android:layout_weight="1"
-            android:fontFamily="sans-serif-condensed"
-            android:textAlignment="textEnd"
-            android:textColor="#000"
-            android:layout_gravity="end"
-            android:text="yo"
-            android:textSize="20sp"/>
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/bad"
+                android:layout_weight="1"
+                android:fontFamily="sans-serif-condensed"
+                android:textAlignment="textEnd"
+                android:textColor="#616161"
+                android:layout_gravity="end"
+                android:text="yo"
+                android:textSize="20sp"/>
         </LinearLayout>
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="4px"
             android:orientation="horizontal">
             <View
                 android:layout_width="wrap_content"
                 android:layout_weight="3"
-                android:layout_height="5dp"
-                android:background="#3cff00"
+                android:layout_height="4px"
+                android:background="#12ee42"
                 android:id="@+id/good_line"/>
+            <Space
+                    android:layout_width="4px"
+                    android:layout_height="4px"
+            />
             <View
                 android:layout_width="wrap_content"
                 android:layout_weight="6"
-                android:layout_height="5dp"
-                android:background="#ff0008"
+                android:layout_height="4px"
+                android:background="#ff2f36"
                 android:id="@+id/bad_line"/>
+        </LinearLayout>
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#fafafa">
+
+        <LinearLayout
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" android:elevation="4dp">
+            <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:id="@+id/content_holder">
+
+            </LinearLayout>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
