@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
             double randomValue = ((int) (2 + (150 - 2) * r.nextDouble() * 100)) / 100.0;
             double price = Double.valueOf(randomValue);
 
-            Receipt receipt = new Receipt("Comarket", price, new Date());
+            Receipt receipt = new Receipt("U wot m8", price, new Date());
             if ((i & 1) == 0) {
                 receipt.setUseful(true);
             } else {
@@ -473,7 +473,7 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 // For testing, will be replaced with date checking
-                if (counter > 10) {
+                if (counter > 200) {
                     break;
                 }
                 counter++;
