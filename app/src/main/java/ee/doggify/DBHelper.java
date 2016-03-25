@@ -128,7 +128,6 @@ public class DBHelper extends SQLiteOpenHelper {
         }
 
         String selectQuery = "SELECT  * FROM " + TABLE_RECEIPT + " WHERE " + KEY_DATE + " BETWEEN " + START_DATE + " AND " + END_DATE;
-        System.out.println(selectQuery);
         ArrayList<Receipt> list = new ArrayList<>();
         Cursor cursor = db.rawQuery(selectQuery, null);
 
@@ -155,7 +154,6 @@ public class DBHelper extends SQLiteOpenHelper {
                 Log.d("Database", "query from database: " + newReceipt);
             } while (cursor.moveToNext());
         }
-        System.out.println("PEETER " + list.size() + " " + a);
         return list;
     }
 
