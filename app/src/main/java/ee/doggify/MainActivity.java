@@ -25,6 +25,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.util.Log;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -155,25 +156,14 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showReceiptContent(LinearLayout view, int period, ArrayList<Receipt> receipts) {
-        String date = "";
-        double total = 0;
+        String date;
+        double total;
         double good = 0;
         double bad = 0;
         DateFormat dateFormat = new SimpleDateFormat("EEE dd. MMM", getResources().getConfiguration().locale);
 
         long DAY_IN_MS = 1000 * 60 * 60 * 24;
-        if (period == 0) {
-            Date dateNow = new Date();
-            date = dateFormat.format(dateNow); //2014/08/06 15:59:48
-        } else if (period == 1) {
-            String end = dateFormat.format(new Date(System.currentTimeMillis() - (DAY_IN_MS)));
-            String start = dateFormat.format(new Date(System.currentTimeMillis() - (8 * DAY_IN_MS)));
-            date = start + " - " + end;
-        } else if (period == 2) {
-            String end = dateFormat.format(new Date(System.currentTimeMillis() - (DAY_IN_MS)));
-            String start = dateFormat.format(new Date(System.currentTimeMillis() - (30 * DAY_IN_MS)));
-            date = start + " - " + end;
-        }
+        date = dateFormat.format(new Date(System.currentTimeMillis() - period*(DAY_IN_MS))); //2014/08/06 15:59:48
 
         for (Receipt receipt : receipts) {
             if (receipt.isUseful()) {
@@ -247,10 +237,11 @@ public class MainActivity extends AppCompatActivity {
             LinearLayout contentView = (LinearLayout) inflater.inflate(R.layout.receipt_content_item, null);
             TextView tv = (TextView) contentView.findViewById(R.id.receipt_element_company);
             TextView tv2 = (TextView) contentView.findViewById(R.id.receipt_element_price);
+            FrameLayout type = (FrameLayout) contentView.findViewById(R.id.type);
             tv.setText(receipt.getCompanyName());
             tv2.setText(receipt.getPrice() + "€");
             if (!receipt.isUseful()) {
-                contentView.setBackgroundColor(color);
+                type.setBackgroundColor(color);
             }
             view.addView(contentView);
         }
