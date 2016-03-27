@@ -39,6 +39,7 @@ import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecovera
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
+import com.google.api.client.util.Base64;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.ListMessagesResponse;
@@ -55,6 +56,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import com.google.api.services.gmail.model.Message;
+import com.google.api.services.gmail.model.MessagePartHeader;
 import ee.doggify.Models.Receipt;
 
 
@@ -126,15 +129,15 @@ public class MainActivity extends AppCompatActivity {
     private void showReceipts() {
         DBHelper db = new DBHelper(MainActivity.this);
         //db.truncateDB();
-        LinearLayout receiptDay = (LinearLayout) findViewById(R.id.cell1);
-        LinearLayout receiptWeek = (LinearLayout) findViewById(R.id.cell2);
-        LinearLayout receiptMonth = (LinearLayout) findViewById(R.id.cell3);
+        LinearLayout receiptDay1 = (LinearLayout) findViewById(R.id.cell1);
+        LinearLayout receiptDay2 = (LinearLayout) findViewById(R.id.cell2);
+        LinearLayout receiptDay3 = (LinearLayout) findViewById(R.id.cell3);
 
-        //showReceiptContent(receiptDay, 0, db.readFromDB());
+        showReceiptContent(receiptDay1, 0, db.readFromDB());
         Random r = new Random();
-        showReceiptContent(receiptDay, 0, getDummys(1 + r.nextInt(5)));
-        showReceiptContent(receiptWeek, 1, getDummys(1 + r.nextInt(7)));
-        showReceiptContent(receiptMonth, 2, getDummys(1 + r.nextInt(12)));
+        //showReceiptContent(receiptDay1, 0, getDummys(1 + r.nextInt(5)));
+        showReceiptContent(receiptDay2, 1, getDummys(1 + r.nextInt(7)));
+        showReceiptContent(receiptDay3, 2, getDummys(1 + r.nextInt(12)));
 
     }
 
@@ -475,7 +478,7 @@ public class MainActivity extends AppCompatActivity {
             metaHeaders.add("Date");
 
             int counter = 0; // for testing
-            /*for (Message message : messages.getMessages()) {
+            for (Message message : messages.getMessages()) {
 
                 // Read Date and Return-Path headers for the current message
                 List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).setFormat("metadata").execute().getPayload().getHeaders();
@@ -495,7 +498,7 @@ public class MainActivity extends AppCompatActivity {
                     break;
                 }
                 counter++;
-            }*/
+            }
             // Call notification for every new expense
             for (Receipt receipt : newExpenses) {
                 callNotification(receipt);
