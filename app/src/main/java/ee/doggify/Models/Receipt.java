@@ -1,6 +1,5 @@
 package ee.doggify.Models;
 
-import android.util.Log;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -97,27 +96,24 @@ public class Receipt {
     public static Receipt stringToReceipt(String string, String stringDate) {
         String[] lines = string.split("\\r\\n");
 
-        String checkIfCorrectMail = lines[0]; // If the mail is not for notifying expenses
-        if (!checkIfCorrectMail.contains("Teie kontol on toimunud broneering")){
-            Log.d("False message received", lines[0]);
-            return null;
-        }
-
         String paidSumLine = lines[3];
         String[] paidSumLines = paidSumLine.split(" ");
         double paidSum = Double.parseDouble(paidSumLines[1].replace(" EUR", "").replace("-",""));
 
-        String paidToLine = lines[5];
-        String paidToSplitAtExpression = paidToLine.split(">")[0];
-        String[] paidToFullExpression = paidToSplitAtExpression.split(" ");
-        int paidToWordsCount = paidToFullExpression.length;
-
-        String companyName = "";
-
-        for (int i = 2; i < paidToWordsCount; i++) {
-            companyName += paidToFullExpression[i];
+        String companyName;
+        String paidTo = lines[5].trim();
+        if (paidTo.contains("Viitenumber")) {
+            paidTo = lines[6].split(":")[1].trim();
+            companyName = paidTo;
+        } else {
+            paidTo = paidTo.split(": ")[1];
+            if (paidTo.split(" ")[0].contains("...")) {
+                paidTo = paidTo.substring(paidTo.indexOf(" ")).trim();
+            }
+            companyName = paidTo.replace(",", ", ").split(">")[0].trim();
         }
 
+        companyName = companyName.toUpperCase(); //TODO: title case
 
         return new Receipt(companyName, paidSum, parseDateString(stringDate));
     }

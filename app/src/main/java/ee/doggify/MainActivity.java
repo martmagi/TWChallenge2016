@@ -48,16 +48,9 @@ import java.io.IOException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import com.google.api.services.gmail.model.Message;
-import com.google.api.services.gmail.model.MessagePartHeader;
 import ee.doggify.Models.Receipt;
 
 
@@ -73,6 +66,7 @@ public class MainActivity extends AppCompatActivity {
     static private Bitmap happy_doge;
     static private Bitmap meh_doge;
     static private Bitmap sad_doge;
+    private DBHelper db;
 
     /**
      * Create the main activity.
@@ -121,14 +115,16 @@ public class MainActivity extends AppCompatActivity {
                 BitmapFactory.decodeResource(getResources(), R.drawable.sad_doge),
                 scale, scale, true);
 
+
+        db = new DBHelper(MainActivity.this);
+        db.truncateDB();
+
         forGoogle();
         //setCustomActionBar();
         showReceipts();
     }
 
     private void showReceipts() {
-        DBHelper db = new DBHelper(MainActivity.this);
-        //db.truncateDB();
         LinearLayout receiptDay1 = (LinearLayout) findViewById(R.id.cell1);
         LinearLayout receiptDay2 = (LinearLayout) findViewById(R.id.cell2);
         LinearLayout receiptDay3 = (LinearLayout) findViewById(R.id.cell3);
@@ -236,12 +232,16 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         view.removeAllViewsInLayout();
+
+        DateFormat dateFormat = new SimpleDateFormat("dd. MMM", getResources().getConfiguration().locale);
+
         for (Receipt receipt : receipts) {
             LinearLayout contentView = (LinearLayout) inflater.inflate(R.layout.receipt_content_item, null);
             TextView tv = (TextView) contentView.findViewById(R.id.receipt_element_company);
             TextView tv2 = (TextView) contentView.findViewById(R.id.receipt_element_price);
             FrameLayout type = (FrameLayout) contentView.findViewById(R.id.type);
-            tv.setText(receipt.getCompanyName());
+            String date = dateFormat.format(receipt.getDate());
+            tv.setText(date + " " + receipt.getCompanyName());
             tv2.setText(receipt.getPrice() + "€");
             if (!receipt.isUseful()) {
                 type.setBackgroundColor(color);
@@ -457,7 +457,9 @@ public class MainActivity extends AppCompatActivity {
             // Create connection to get all message ids
             ListMessagesResponse messages = null;
             try {
-                messages = mService.users().messages().list(user).execute();
+                messages = mService.users().messages().list(user).setQ(
+                    "from:automailer@seb.ee (subject:\"Väljaminek kontolt\" OR subject:\"SEB kiirteavitamine\")"
+                ).setMaxResults((long) 20).execute();
             } catch (IOException e) {
                 if (e instanceof GooglePlayServicesAvailabilityIOException) {
                     showGooglePlayServicesAvailabilityErrorDialog(
@@ -471,33 +473,16 @@ public class MainActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-
-            // Creating specific list of metaHeaders so that the result is smaller
-            List<String> metaHeaders = new ArrayList<>();
-            metaHeaders.add("Return-Path");
-            metaHeaders.add("Date");
-
-            int counter = 0; // for testing
             for (Message message : messages.getMessages()) {
+                Message m = mService.users().messages().get(user, message.getId()).execute();
+                String encryptedContent = m.getPayload().getParts().get(0).getBody().getData();
+                String decryptedContent = new String(Base64.decodeBase64(encryptedContent), "UTF-8");
+                String dString = m.getPayload().getHeaders().get(1).getValue().split(";")[1].trim();
 
-                // Read Date and Return-Path headers for the current message
-                List<MessagePartHeader> headers = mService.users().messages().get(user, message.getId()).setMetadataHeaders(metaHeaders).setFormat("metadata").execute().getPayload().getHeaders();
-
-                // If the returned headers lists size is 2, meaning it has both dare and return-path data
-                if (headers.size() == 2 && headers.get(0).getValue().equals("<automailer@seb.ee>")) {
-                    String encryptedContent = mService.users().messages().get(user, message.getId()).execute().getPayload().getParts().get(0).getBody().getData();
-                    String decryptedContent = new String(Base64.decodeBase64(encryptedContent), "UTF-8");
-                    Receipt newReceipt = Receipt.stringToReceipt(decryptedContent, headers.get(1).getValue());
-                    if (newReceipt != null) { // If the mail is not for notifying expenses
-                        newExpenses.add(Receipt.stringToReceipt(decryptedContent, headers.get(1).getValue()));
-                    }
+                Receipt newReceipt = Receipt.stringToReceipt(decryptedContent, dString);
+                if (newReceipt != null) { // If the mail is not for notifying expenses
+                    newExpenses.add(newReceipt);
                 }
-
-                // For testing, will be replaced with date checking
-                if (counter > 200) {
-                    break;
-                }
-                counter++;
             }
             // Call notification for every new expense
             for (Receipt receipt : newExpenses) {
@@ -549,14 +534,15 @@ public class MainActivity extends AppCompatActivity {
 
         //Create the notification
         NotificationCompat.Builder builder = new NotificationCompat.Builder(getBaseContext());
-        builder.setPriority(NotificationCompat.PRIORITY_MAX)
-                .setDefaults(Notification.DEFAULT_ALL)
+        builder.setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setDefaults(Notification.DEFAULT_SOUND)
                 .setSmallIcon(R.mipmap.ic_launcher)
-                .setContentTitle("You spent " + receipt.getPrice() + " at " + receipt.getCompanyName() + " on " + receipt.getDate())
-                .setContentText("Was it really necessary?")
+                .setContentTitle(receipt.getCompanyName())
+                .setContentText("Was it really necessary?" + " (" + receipt.getPrice() + "€)")
                 .setAutoCancel(true)
-                .addAction(R.mipmap.ic_thumb_down_black_24dp, "Not really..", declineIntent)
-                .addAction(R.mipmap.ic_thumb_up_black_24dp, "Of course!", acceptIntent);
+                .setVibrate(new long[] { 0, 30, 60, 30 })
+                .addAction(R.mipmap.ic_thumb_up_black_24dp, "Yes", acceptIntent)
+                .addAction(R.mipmap.ic_thumb_down_black_24dp, "No", declineIntent);
 
         // Gets an instance of the NotificationManager service
         NotificationManager notifyMgr = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);

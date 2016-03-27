@@ -19,18 +19,17 @@
             android:layout_weight="1"
             android:id="@+id/receipt_element_company"
             android:fontFamily="sans-serif-light"
-            android:layout_marginTop="8dp" android:layout_marginBottom="8dp" android:layout_gravity="center_vertical"/>
+            android:layout_marginTop="12dp" android:layout_marginBottom="12dp" android:layout_gravity="center_vertical"/>
         <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="80dp"
                 android:layout_height="wrap_content"
                 android:text="123 eur"
                 android:textSize="16sp"
-                android:layout_weight="1"
                 android:textAlignment="textEnd"
                 android:layout_gravity="center_vertical|end"
                 android:id="@+id/receipt_element_price"
                 android:fontFamily="sans-serif-condensed"
 
-                android:layout_marginBottom="8dp" android:layout_marginTop="8dp"/>
+                android:layout_marginBottom="12dp" android:layout_marginTop="12dp"/>
 
 </LinearLayout>
