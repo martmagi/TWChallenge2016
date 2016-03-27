@@ -92,7 +92,7 @@ public class DBHelper extends SQLiteOpenHelper {
             if (cursor.moveToFirst()) {
                 do {
                     Receipt newReceipt = new Receipt();
-                    newReceipt.setPrice(cursor.getInt(cursor.getColumnIndex(KEY_SUM)));
+                    newReceipt.setPrice(cursor.getDouble(cursor.getColumnIndex(KEY_SUM)));
                     newReceipt.setCompanyName((cursor.getString(cursor.getColumnIndex(KEY_COMP))));
                     DateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
 
@@ -134,7 +134,7 @@ public class DBHelper extends SQLiteOpenHelper {
         if (cursor.moveToFirst()) {
             do {
                 Receipt newReceipt = new Receipt();
-                newReceipt.setPrice(cursor.getInt(cursor.getColumnIndex(KEY_SUM)));
+                newReceipt.setPrice(cursor.getDouble(cursor.getColumnIndex(KEY_SUM)));
                 newReceipt.setCompanyName((cursor.getString(cursor.getColumnIndex(KEY_COMP))));
                 DateFormat formatter = new SimpleDateFormat("EEE MMM dd HH:mm:ss zzz yyyy", Locale.ENGLISH);
 
