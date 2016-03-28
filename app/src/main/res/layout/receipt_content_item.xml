@@ -3,14 +3,8 @@
               android:orientation="horizontal" android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:id="@+id/receipt_content_item"
-              android:paddingRight="16dp" android:paddingLeft="16dp" android:background="#fff">
+              android:paddingRight="16dp" android:paddingLeft="16dp" android:background="@color/good">
 
-    <FrameLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content" android:background="@color/good"
-            android:id="@+id/type" android:alpha=".6" android:transitionGroup="false"
-            android:layout_gravity="center_vertical">
-    </FrameLayout>
     <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

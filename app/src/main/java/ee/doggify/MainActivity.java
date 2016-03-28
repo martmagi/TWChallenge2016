@@ -239,12 +239,11 @@ public class MainActivity extends AppCompatActivity {
             LinearLayout contentView = (LinearLayout) inflater.inflate(R.layout.receipt_content_item, null);
             TextView tv = (TextView) contentView.findViewById(R.id.receipt_element_company);
             TextView tv2 = (TextView) contentView.findViewById(R.id.receipt_element_price);
-            FrameLayout type = (FrameLayout) contentView.findViewById(R.id.type);
             String date = dateFormat.format(receipt.getDate());
             tv.setText(date + " " + receipt.getCompanyName());
             tv2.setText(receipt.getPrice() + "€");
             if (!receipt.isUseful()) {
-                type.setBackgroundColor(color);
+                contentView.setBackgroundColor(color);
             }
             view.addView(contentView);
         }

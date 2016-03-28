@@ -46,7 +46,7 @@
 
                             android:textSize="58sp" android:focusableInTouchMode="false"
                             android:layout_marginLeft="-1dp" android:layout_marginTop="-4dp"
-                            android:alpha=".3"/>
+                            android:alpha=".9"/>
                 </LinearLayout>
                 <ImageView
                         android:layout_width="90dp"
@@ -89,7 +89,7 @@
                 android:layout_width="wrap_content"
                 android:layout_weight="3"
                 android:layout_height="4dp"
-                android:background="@color/good"
+                android:background="@color/good_bar"
                 android:id="@+id/good_line"/>
             <Space
                     android:layout_width="2dp"
@@ -99,7 +99,7 @@
                 android:layout_width="wrap_content"
                 android:layout_weight="6"
                 android:layout_height="4dp"
-                android:background="@color/bad"
+                android:background="@color/bad_bar"
                 android:id="@+id/bad_line"/>
         </LinearLayout>
         <LinearLayout
