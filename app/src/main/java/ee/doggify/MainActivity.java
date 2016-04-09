@@ -164,9 +164,7 @@ public class MainActivity extends AppCompatActivity {
         double good = 0;
         double bad = 0;
         DateFormat dateFormat = new SimpleDateFormat("EEE dd. MMM", getResources().getConfiguration().locale);
-
-        long DAY_IN_MS = 1000 * 60 * 60 * 24;
-        date = dateFormat.format(new Date(System.currentTimeMillis())); //2014/08/06 15:59:48
+        date = dateFormat.format(receipts.get(0).getDate());
 
         for (Receipt receipt : receipts) {
             if (receipt.isUseful()) {
@@ -183,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
         DecimalFormat df = new DecimalFormat("#.##");
 
         TextView receiptTotal = (TextView) view.findViewById(R.id.receipt_total);
-        receiptTotal.setText(df.format(total) + "€");
+        receiptTotal.setText(String.format("%s€", df.format(total)));
 
         TextView receiptGood = (TextView) view.findViewById(R.id.good);
         TextView receiptBad = (TextView) view.findViewById(R.id.bad);
@@ -264,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
             TextView tv = (TextView) contentView.findViewById(R.id.receipt_element_company);
             TextView tv2 = (TextView) contentView.findViewById(R.id.receipt_element_price);
             String date = dateFormat.format(receipt.getDate());
-            tv.setText(date+receipt.getCompanyName());
+            tv.setText(receipt.getCompanyName());
             tv2.setText(receipt.getPrice() + "€");
             if (!receipt.isUseful()) {
                 contentView.setBackgroundColor(color);

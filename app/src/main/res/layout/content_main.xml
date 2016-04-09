@@ -14,9 +14,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical" android:paddingTop="10dp" android:paddingBottom="10dp"
             android:id="@+id/linearLayoutM8">
-        <!--<include android:id="@+id/cell1" layout="@layout/receipt_item" android:layout_width="fill_parent"
-                 android:layout_height="wrap_content" android:layout_marginLeft="8dp" android:layout_marginTop="8dp"
-                 android:layout_marginRight="8dp"/>-->
         <LinearLayout
                 android:orientation="vertical"
                 android:layout_width="match_parent"
