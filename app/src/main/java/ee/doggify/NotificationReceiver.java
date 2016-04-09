@@ -1,6 +1,7 @@
 package ee.doggify;
 
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -43,5 +44,7 @@ public class NotificationReceiver extends BroadcastReceiver {
         //Close the notification
         NotificationManager manager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         manager.cancel(id);
+
+        MainActivity.getInstace().showReceipts();
     }
 }

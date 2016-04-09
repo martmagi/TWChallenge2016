@@ -64,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
     static private Bitmap meh_doge;
     static private Bitmap sad_doge;
     private DBHelper db;
+    private static MainActivity ins;
 
     /**
      * Create the main activity.
@@ -73,6 +74,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        ins = this;
 
         LinearLayout activityLayout = new LinearLayout(this);
         LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
@@ -121,8 +123,12 @@ public class MainActivity extends AppCompatActivity {
         showReceipts();
     }
 
-    private void showReceipts() {
-        ArrayList<Receipt> dummys = getDummys(4);
+    public static MainActivity getInstace(){
+        return ins;
+    }
+
+    public void showReceipts() {
+        ArrayList<Receipt> dummys = getDummys(0);
         ArrayList<Receipt> receipts = db.readFromDB();
         receipts.addAll(dummys);
 
@@ -130,15 +136,26 @@ public class MainActivity extends AppCompatActivity {
         LinearLayout view = (LinearLayout) findViewById(R.id.main);
         view.removeAllViewsInLayout();
 
-        for (Receipt r : receipts) {
-            LinearLayout card = (LinearLayout) inflater.inflate(R.layout.receipt_item, null);
-            view.addView(card);
-            ArrayList<Receipt> rs = new ArrayList<>();
-            rs.add(r);
-            showReceiptContent(card, rs);
+        TreeMap<Integer, List> rByDays = new TreeMap<>(Collections.reverseOrder());
+        Calendar c = Calendar.getInstance();
+        for (final Receipt r : receipts) {
+            c.setTime(r.getDate());
+            Integer d = c.get(Calendar.YEAR)*400 + c.get(Calendar.DAY_OF_YEAR);
+            Log.i("d", String.valueOf(d));
+            if (rByDays.containsKey(d)) {
+                rByDays.get(d).add(r);
+            } else {
+                rByDays.put(d, new ArrayList<Receipt>(){{add(r);}});
+            }
         }
 
+        for (List r : rByDays.values()) {
+            LinearLayout card = (LinearLayout) inflater.inflate(R.layout.receipt_item, null);
+            view.addView(card);
+            showReceiptContent(card, r);
+        }
     }
+
 
     private ArrayList<Receipt> getDummys(int len) {
         ArrayList<Receipt> receipts = new ArrayList<>();
@@ -158,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
         return receipts;
     }
 
-    private void showReceiptContent(LinearLayout view, ArrayList<Receipt> receipts) {
+    private void showReceiptContent(LinearLayout view, List<Receipt> receipts) {
         String date;
         double total;
         double good = 0;
@@ -307,8 +324,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-        //super.onBackPressed();
-        showReceipts();
+        super.onBackPressed();
     }
 
     /**
@@ -370,6 +386,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             if (isDeviceOnline()) {
                 new MakeRequestTask(mCredential).execute();
+                showReceipts();
             } else {
                 Log.d("Google", "No network connection available.");
             }
