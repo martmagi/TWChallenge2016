@@ -3,8 +3,8 @@
     <color name="colorPrimary">#4DB6AC</color>
     <color name="colorPrimaryDark">#00796B</color>
     <color name="colorAccent">#FFD740</color>
-    <color name="good">#ffffff</color> <!--31cf6c-->
-    <color name="bad">#ffcec6</color>  <!--fb5d53-->
+    <color name="good">#b1ffb5</color>
+    <color name="bad">#ffcec6</color>
     <color name="good_bar">#31cf6c</color>
     <color name="bad_bar">#fb5d53</color>
 </resources>

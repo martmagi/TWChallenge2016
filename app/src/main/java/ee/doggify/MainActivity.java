@@ -21,15 +21,13 @@ import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.DisplayMetrics;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.util.Log;
-import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.api.client.extensions.android.http.AndroidHttp;
@@ -43,15 +41,14 @@ import com.google.api.client.util.Base64;
 import com.google.api.client.util.ExponentialBackOff;
 import com.google.api.services.gmail.GmailScopes;
 import com.google.api.services.gmail.model.ListMessagesResponse;
+import com.google.api.services.gmail.model.Message;
+import ee.doggify.Models.Receipt;
 
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import com.google.api.services.gmail.model.Message;
-import ee.doggify.Models.Receipt;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -125,15 +122,21 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void showReceipts() {
-        LinearLayout receiptDay1 = (LinearLayout) findViewById(R.id.cell1);
-        LinearLayout receiptDay2 = (LinearLayout) findViewById(R.id.cell2);
-        LinearLayout receiptDay3 = (LinearLayout) findViewById(R.id.cell3);
+        ArrayList<Receipt> dummys = getDummys(4);
+        ArrayList<Receipt> receipts = db.readFromDB();
+        receipts.addAll(dummys);
 
-        showReceiptContent(receiptDay1, 0, db.readFromDB());
-        Random r = new Random();
-        //showReceiptContent(receiptDay1, 0, getDummys(1 + r.nextInt(5)));
-        showReceiptContent(receiptDay2, 1, getDummys(1 + r.nextInt(7)));
-        showReceiptContent(receiptDay3, 2, getDummys(1 + r.nextInt(12)));
+        LayoutInflater inflater = LayoutInflater.from(this);
+        LinearLayout view = (LinearLayout) findViewById(R.id.main);
+        view.removeAllViewsInLayout();
+
+        for (Receipt r : receipts) {
+            LinearLayout card = (LinearLayout) inflater.inflate(R.layout.receipt_item, null);
+            view.addView(card);
+            ArrayList<Receipt> rs = new ArrayList<>();
+            rs.add(r);
+            showReceiptContent(card, rs);
+        }
 
     }
 
@@ -143,18 +146,19 @@ public class MainActivity extends AppCompatActivity {
 
         DecimalFormat df = new DecimalFormat("#.##");
         String[] s = {"U wot m8", "Comarket", "A&O", "Rimi", "Alko1000", "AS Tiit ja Teet ehitus", "OÜ Xyz Reg. Kood. 420123042924", "Shooters Tartu", "Fasters Barclay"};
+        long DAY_IN_MS = 1000 * 60 * 60 * 24;
         for (int i = len; i > 0; i--) {
             double randomValue = ((int) (30 * r.nextDouble() * 100)) / 100.0;
             double price = Double.valueOf(randomValue);
 
-            Receipt receipt = new Receipt(s[r.nextInt(s.length)], price, new Date());
+            Receipt receipt = new Receipt(s[r.nextInt(s.length)], price, new Date(System.currentTimeMillis() - (1 + r.nextInt(5))*(DAY_IN_MS)));
             receipt.setUseful(r.nextBoolean());
             receipts.add(receipt);
         }
         return receipts;
     }
 
-    private void showReceiptContent(LinearLayout view, int period, ArrayList<Receipt> receipts) {
+    private void showReceiptContent(LinearLayout view, ArrayList<Receipt> receipts) {
         String date;
         double total;
         double good = 0;
@@ -162,7 +166,7 @@ public class MainActivity extends AppCompatActivity {
         DateFormat dateFormat = new SimpleDateFormat("EEE dd. MMM", getResources().getConfiguration().locale);
 
         long DAY_IN_MS = 1000 * 60 * 60 * 24;
-        date = dateFormat.format(new Date(System.currentTimeMillis() - period*(DAY_IN_MS))); //2014/08/06 15:59:48
+        date = dateFormat.format(new Date(System.currentTimeMillis())); //2014/08/06 15:59:48
 
         for (Receipt receipt : receipts) {
             if (receipt.isUseful()) {
@@ -183,9 +187,6 @@ public class MainActivity extends AppCompatActivity {
 
         TextView receiptGood = (TextView) view.findViewById(R.id.good);
         TextView receiptBad = (TextView) view.findViewById(R.id.bad);
-
-        receiptBad.setText(df.format(bad) + "€");
-        receiptGood.setText(df.format(good) + "€");
 
         View goodLine = view.findViewById(R.id.good_line);
         View badLine = view.findViewById(R.id.bad_line);
@@ -211,7 +212,30 @@ public class MainActivity extends AppCompatActivity {
 
         goodLine.setLayoutParams(paramGood);
         badLine.setLayoutParams(paramBad);
-        populateList((LinearLayout) view.findViewById(R.id.content_holder), receipts);
+
+        ArrayList<Receipt> bad_r = new ArrayList<>();
+        ArrayList<Receipt> good_r = new ArrayList<>();
+
+        for (Receipt r : receipts) {
+            if (r.isUseful()) {
+                good_r.add(r);
+            } else {
+                bad_r.add(r);
+            }
+        }
+
+        if (bad_r.size() > 0) {
+            populateList((LinearLayout) view.findViewById(R.id.content_bad), bad_r);
+            receiptBad.setText(df.format(bad) + "€");
+        } else {
+            receiptBad.setVisibility(View.GONE);
+        }
+        if (good_r.size() > 0) {
+            populateList((LinearLayout) view.findViewById(R.id.content_good), good_r);
+            receiptGood.setText(df.format(good) + "€");
+        } else {
+            receiptGood.setVisibility(View.GONE);
+        }
     }
 
     private void populateList(LinearLayout view, ArrayList<Receipt> receipts) {
@@ -240,7 +264,7 @@ public class MainActivity extends AppCompatActivity {
             TextView tv = (TextView) contentView.findViewById(R.id.receipt_element_company);
             TextView tv2 = (TextView) contentView.findViewById(R.id.receipt_element_price);
             String date = dateFormat.format(receipt.getDate());
-            tv.setText(date + " " + receipt.getCompanyName());
+            tv.setText(date+receipt.getCompanyName());
             tv2.setText(receipt.getPrice() + "€");
             if (!receipt.isUseful()) {
                 contentView.setBackgroundColor(color);
