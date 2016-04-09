@@ -22,7 +22,7 @@
                 android:textAlignment="textEnd"
                 android:layout_gravity="center_vertical|end"
                 android:id="@+id/receipt_element_price"
-                android:fontFamily="sans-serif-condensed-light"
+                android:fontFamily="sans-serif-condensed"
 
                 android:layout_marginBottom="10dp" android:layout_marginTop="10dp"/>
 

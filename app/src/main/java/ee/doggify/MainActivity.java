@@ -180,7 +180,7 @@ public class MainActivity extends AppCompatActivity {
         double total;
         double good = 0;
         double bad = 0;
-        DateFormat dateFormat = new SimpleDateFormat("EEE dd. MMM", getResources().getConfiguration().locale);
+        DateFormat dateFormat = new SimpleDateFormat("EEEE dd. MMMM", getResources().getConfiguration().locale);
         date = dateFormat.format(receipts.get(0).getDate());
 
         for (Receipt receipt : receipts) {
@@ -193,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
         total = good + bad;
 
         TextView receiptDate = (TextView) view.findViewById(R.id.receipt_date);
-        receiptDate.setText(date);
+        receiptDate.setText(date.substring(0,1).toUpperCase() + date.substring(1));
 
         DecimalFormat df = new DecimalFormat("#.##");
 
@@ -251,6 +251,10 @@ public class MainActivity extends AppCompatActivity {
         } else {
             receiptGood.setVisibility(View.GONE);
         }
+
+        // hide totals by category to simplify UI
+        receiptBad.setVisibility(View.GONE);
+        receiptGood.setVisibility(View.GONE);
     }
 
     private void populateList(LinearLayout view, ArrayList<Receipt> receipts) {
